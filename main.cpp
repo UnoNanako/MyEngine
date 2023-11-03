@@ -41,7 +41,6 @@ struct VertexData {
 //マテリアル
 struct Material {
 	Vector3 color;
-	string textureFilePath;
 	int32_t enableLighting;
 };
 
@@ -707,7 +706,7 @@ int WINAPI WinMain(
 	//DSCHeapの先頭にDSVを作る
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	//InputLayout
-	D3D12_INPUT_ELEMENT_DESC inputElementDescs[2] = {};
+	D3D12_INPUT_ELEMENT_DESC inputElementDescs[3] = {};
 	inputElementDescs[0].SemanticName = "POSITION";
 	inputElementDescs[0].SemanticIndex = 0;
 	inputElementDescs[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -958,8 +957,6 @@ int WINAPI WinMain(
 	const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-	//device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
-
 	//tを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い。
 	const float kDeltaTime = 1.0f / 60.0f;
 
@@ -1076,8 +1073,6 @@ int WINAPI WinMain(
 			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*wvpData = worldViewProjectionMatrix;
 
-			
-			
 			// Sprite用のWorldViewProjectionMatrixを作る
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
@@ -1096,7 +1091,6 @@ int WINAPI WinMain(
 
 			// マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 
 			//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);

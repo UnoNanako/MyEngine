@@ -35,12 +35,14 @@ struct Transform {
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
+	Vector3 normal;
 };
 
 //マテリアル
 struct Material {
 	Vector3 color;
 	string textureFilePath;
+	int32_t enableLighting;
 };
 
 //モデルデータ
@@ -714,6 +716,10 @@ int WINAPI WinMain(
 	inputElementDescs[1].SemanticIndex = 0;
 	inputElementDescs[1].Format = DXGI_FORMAT_R32G32_FLOAT;
 	inputElementDescs[1].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
+	inputElementDescs[2].SemanticName = "NORMAL";
+	inputElementDescs[2].SemanticIndex = 0;
+	inputElementDescs[2].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+	inputElementDescs[2].AlignedByteOffset = D3D12_APPEND_ALIGNED_ELEMENT;
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc{};
 	inputLayoutDesc.pInputElementDescs = inputElementDescs;
 	inputLayoutDesc.NumElements = _countof(inputElementDescs);
@@ -790,6 +796,8 @@ int WINAPI WinMain(
 	// モデル読み込み
 	ModelData modelData = LoadObjFile("resources/", "plane.obj");
 
+
+
 	const uint32_t kSubdivision = 16; //分割数
 	const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
 
@@ -854,6 +862,9 @@ int WINAPI WinMain(
 			vertexData[start].position.w = 1.0f;
 			vertexData[start].texcoord.x = float(lonIndex) / float(kSubdivision);
 			vertexData[start].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
+			vertexData[start].normal.x = vertexData[start].position.x;
+			vertexData[start].normal.y = vertexData[start].position.y;
+			vertexData[start].normal.z = vertexData[start].position.z;
 			//b
 			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
 			vertexData[start + 1].position.y = sin(lat + kLatEvery);
@@ -861,6 +872,9 @@ int WINAPI WinMain(
 			vertexData[start + 1].position.w = 1.0f;
 			vertexData[start + 1].texcoord.x = float(lonIndex) / float(kSubdivision);
 			vertexData[start + 1].texcoord.y = 1.0 - float(latIndex + 1) / float(kSubdivision);
+			vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
+			vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
+			vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
 			//c
 			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
 			vertexData[start + 2].position.y = sin(lat);
@@ -868,10 +882,19 @@ int WINAPI WinMain(
 			vertexData[start + 2].position.w = 1.0f;
 			vertexData[start + 2].texcoord.x = float(lonIndex+1) / float(kSubdivision);
 			vertexData[start + 2].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
+			vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
+			vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
+			vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
 			//c
 			vertexData[start + 3] = vertexData[start + 2];
+			vertexData[start + 3].normal.x = vertexData[start + 3].position.x;
+			vertexData[start + 3].normal.y = vertexData[start + 3].position.y;
+			vertexData[start + 3].normal.z = vertexData[start + 3].position.z;
 			//b
 			vertexData[start + 4] = vertexData[start + 1];
+			vertexData[start + 4].normal.x = vertexData[start + 4].position.x;
+			vertexData[start + 4].normal.y = vertexData[start + 4].position.y;
+			vertexData[start + 4].normal.z = vertexData[start + 4].position.z;
 			//d
 			vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
 			vertexData[start + 5].position.y = sin(lat + kLatEvery);
@@ -879,6 +902,9 @@ int WINAPI WinMain(
 			vertexData[start + 5].position.w = 1.0f;
 			vertexData[start + 5].texcoord.x = float(lonIndex+1) / float(kSubdivision);
 			vertexData[start + 5].texcoord.y = 1.0 - float(latIndex+1) / float(kSubdivision);
+			vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
+			vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
+			vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
 		}
 	}
 	
@@ -891,6 +917,15 @@ int WINAPI WinMain(
 	// 今回は赤を書き込んでみる
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	*materialData = color;
+
+	//Sprite用のマテリアルリソースを作る
+	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
+	//データを書き込む
+	Material* materialDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
+	//SpriteはLightingしないのでfalseを設定する
+	materialDataSprite->enableLighting = false;
 
 	//Sprite用のTransformMatrix用のリソースを作る。Matrix4x4。1つ分のサイズを用意する
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
@@ -1032,7 +1067,7 @@ int WINAPI WinMain(
 				{0.0f,0.0f,0.0f},
 				{0.0f,0.0f,-5.0f}
 			};
-			transform.rotate.y += 0.03f;
+			//transform.rotate.y += 0.03f;
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
@@ -1061,6 +1096,8 @@ int WINAPI WinMain(
 
 			// マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+
 			//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 
@@ -1069,30 +1106,16 @@ int WINAPI WinMain(
 
 			ImGui::Begin("Window");
 			//ImGui::Checkbox("No titlebar", &no_titlebar); //bool型の変数を入れる
-			//ImGui::ColorEdit3("Color", &color.x);
 			ImGui::ColorEdit4("Alpha", &color.x);
 			*materialData = color;
 			ImGui::End();
-
 			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
-
-			// 描画！（DrawCall/ドローコール）。3頂点で1つのインスタンス。インスタンスについては今後
-			//commandList->DrawInstanced(6, 1, 0, 0);
-
 			// Spriteの描画。変更が必要なものだけ変更する
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);   // VBVを設定
-			// TransformationMatrixCBufferの場所を設定
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			// 描画！（DrawCall/ドローコール）
-			//commandList->DrawInstanced(6, 1, 0, 0);
-
-			// 他の設定諸々
-			// instancing用のDataを読むためにStructuredBufferのSRVを設定する
-			//commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
-			// 他の設定諸々
+		
 			// 描画！6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
 			commandList->DrawInstanced(kVertexCount, 1, 0, 0);
 

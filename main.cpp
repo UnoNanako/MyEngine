@@ -17,11 +17,15 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "MT3.h"
+#define DIRECTINPUT_VERSION	    0x0800 //DirectInputのバージョン指定
+#include <dinput.h>
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
+#pragma comment(lib,"dinput8.lib")
+#pragma comment(lib,"dxguid.lib")
 
 using namespace std;
 
@@ -537,6 +541,18 @@ int WINAPI WinMain(
 	//デバイスの生成がうまくいかなかったので起動できない
 	assert(device != nullptr);
 	Log("Complete create D3D12Device!!!\n"); //初期化完了のログを出す
+
+	//DirectInputオブジェクトの生成
+	IDirectInput8* directInput = nullptr;
+	HRESULT hr = DirectInput8Create(
+		wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
+		(void**)&directInput, nullptr);
+	assert(SUCCEEDED(hr));
+	//キーボードデバイスの生成
+	IDirectInputDevice8* keyboard = nullptr;
+	HRESULT hr = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
+	assert(SUCCEEDED(hr));
+
 #ifdef _DEBUG
 	ID3D12InfoQueue* infoQueue = nullptr;
 	if (SUCCEEDED(device->QueryInterface(IID_PPV_ARGS(&infoQueue)))) {
@@ -565,6 +581,7 @@ int WINAPI WinMain(
 		infoQueue->Release();
 	}
 #endif
+
 	//コマンドキューを生成する
 	ID3D12CommandQueue* commandQueue = nullptr;
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
@@ -755,10 +772,10 @@ int WINAPI WinMain(
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// Shaderをコンパイルする
-	IDxcBlob* vertexShaderBlob = CompileShader(L"Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+	IDxcBlob* vertexShaderBlob = CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(vertexShaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = CompileShader(L"Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
+	IDxcBlob* pixelShaderBlob = CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxcUtils, dxcCompiler, includeHandler);
 	assert(pixelShaderBlob != nullptr);
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};

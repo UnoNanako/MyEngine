@@ -17,15 +17,12 @@
 #include "externals/imgui/imgui_impl_dx12.h"
 #include "externals/imgui/imgui_impl_win32.h"
 #include "MT3.h"
-#define DIRECTINPUT_VERSION	    0x0800 //DirectInputのバージョン指定
-#include <dinput.h>
+#include "Input.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
-#pragma comment(lib,"dinput8.lib")
-#pragma comment(lib,"dxguid.lib")
 
 using namespace std;
 
@@ -438,6 +435,7 @@ Particle MakeNewParticle(std::mt19937& randomEngine) {
 	return particle;
 }
 
+
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(
 	_In_ HINSTANCE hInstance,
@@ -542,16 +540,7 @@ int WINAPI WinMain(
 	assert(device != nullptr);
 	Log("Complete create D3D12Device!!!\n"); //初期化完了のログを出す
 
-	//DirectInputオブジェクトの生成
-	IDirectInput8* directInput = nullptr;
-	HRESULT hr = DirectInput8Create(
-		wc.hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8,
-		(void**)&directInput, nullptr);
-	assert(SUCCEEDED(hr));
-	//キーボードデバイスの生成
-	IDirectInputDevice8* keyboard = nullptr;
-	HRESULT hr = directInput->CreateDevice(GUID_SysKeyboard, &keyboard, NULL);
-	assert(SUCCEEDED(hr));
+
 
 #ifdef _DEBUG
 	ID3D12InfoQueue* infoQueue = nullptr;
@@ -945,7 +934,7 @@ int WINAPI WinMain(
 	// 今回は赤を書き込んでみる
 	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
 	materialData->color = color;
-	materialData->enableLighting = 1.0f;
+	materialData->enableLighting = 1;
 
 	//Sprite用のマテリアルリソースを作る
 	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
@@ -1053,6 +1042,12 @@ int WINAPI WinMain(
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+	//ポインタ
+	Input* input = nullptr;
+	//入力の初期化
+	input = new Input();
+	input->Initialize(wc.hInstance, hwnd);
+
 	//--------------------10. GPUの実行を待つ(fenceは実行を待つものではなく、GPUの処理が終わったかを調べるもの)	//ウィンドウの×ボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		//Windoeにメッセージが来てたら最優先で処理させる
@@ -1072,6 +1067,15 @@ int WINAPI WinMain(
 			ImGui::ShowDemoWindow();
 
 			///--------------------更新処理ここから--------------------
+
+			//入力の更新
+			input->Update();
+
+				//キーが押されているときの処理例
+			//数字の0キーが押されていたら
+			if (input->PushKey(DIK_0)) {
+				OutputDebugStringA("Hit 0\n");
+			}
 
 			Transform cameraTransform{
 				{1.0f,1.0f,1.0f},
@@ -1253,5 +1257,8 @@ int WINAPI WinMain(
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
 		debug->Release();
 	}
+
+	//入力解放
+	delete input;
 	return 0;
 }

@@ -14,8 +14,10 @@ public: //メンバ関数
 	void Update();
 	//getter
 	HWND GetHwnd() const { return hwnd; }
+	HINSTANCE GetHInstance() const { return wc.hInstance; }
 private:
 	//ウィンドウハンドル
 	HWND hwnd = nullptr;
+	WNDCLASS wc{};
 };
 

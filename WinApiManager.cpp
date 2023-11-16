@@ -3,7 +3,6 @@
 
 void WinApiManager::Initialie()
 {
-	WNDCLASS wc{};
 	//COMの初期化
 	CoInitializeEx(0, COINIT_MULTITHREADED);
 	//ウィンドウプロシージャ

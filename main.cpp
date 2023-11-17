@@ -19,7 +19,6 @@
 #include "MT3.h"
 #include "Input.h"
 #include "WinApiManager.h"
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 #pragma comment(lib,"d3d12.lib")
 #pragma comment(lib,"dxgi.lib")
 #pragma comment(lib,"dxguid.lib")
@@ -115,23 +114,7 @@ ID3D12DescriptorHeap* CreateDescriptorHeap(
 	return descriptorHeap;
 }
 
-//ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-	//メッセージに応じてゲーム固有の処理を行う
-	switch (msg) {
-		//ウィンドウが破棄された
-	case WM_DESTROY:
-		//OSに対して、アプリの終了を伝える
-		PostQuitMessage(0);
-		return 0;
-	}
 
-	//標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
@@ -447,11 +430,11 @@ int WINAPI WinMain(
 	WinApiManager* winApiManager = nullptr;
 	//WindowsAPIの初期化
 	winApiManager = new WinApiManager();
-	winApiManager->Initialie();
+	winApiManager->Initialize();
 	Input* input = nullptr;
 	//入力の初期化
 	input = new Input();
-	input->Initialize(wc.hInstance, winApiManager->GetHwnd());
+	input->Initialize(winApiManager);
 
 	
 #ifdef _DEBUG
@@ -468,7 +451,7 @@ int WINAPI WinMain(
 	IDXGIFactory7* dxgiFactory = nullptr;
 	//HRESULTはWindows系のエラーコードであり、
 	//関数が成功したかどうかをSUCCEEDEDマクロで判定できる
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 	//初期化の根本的な部分でエラーが出た場合はプログラムが間違っているか、どうにもできない場合が多いのでassertにしておく
 	assert(SUCCEEDED(hr));
 	//使用するアダプタ用の変数。最初にnullptrを入れておく
@@ -695,7 +678,7 @@ int WINAPI WinMain(
 	assert(SUCCEEDED(hr));
 
 	// DepthStencilTextureをウィンドウのサイズで作成
-	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, kClientWidth, kClientHeight);
+	ID3D12Resource* depthStencilResource = CreateDepthStencilTextureResource(device, WinApiManager::kClientWidth, WinApiManager::kClientHeight);
 	//DSCHeapの先頭にDSVを作る
 	device->CreateDepthStencilView(depthStencilResource, &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 	//InputLayout
@@ -959,8 +942,8 @@ int WINAPI WinMain(
 	// ビューポート
 	D3D12_VIEWPORT viewport{};
 	// クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = kClientWidth;
-	viewport.Height = kClientHeight;
+	viewport.Width = WinApiManager::kClientWidth;
+	viewport.Height = WinApiManager::kClientHeight;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	viewport.MinDepth = 0.0f;
@@ -970,9 +953,9 @@ int WINAPI WinMain(
 	D3D12_RECT scissorRect{};
 	// 基本的にビューポートと同じ矩形が構成されるようにする
 	scissorRect.left = 0;
-	scissorRect.right = kClientWidth;
+	scissorRect.right = WinApiManager::kClientWidth;
 	scissorRect.top = 0;
-	scissorRect.bottom = kClientHeight;
+	scissorRect.bottom = WinApiManager::kClientHeight;
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker3.png");
@@ -1011,7 +994,7 @@ int WINAPI WinMain(
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGui::StyleColorsDark();
-	ImGui_ImplWin32_Init(hwnd);
+	ImGui_ImplWin32_Init(winApiManager->GetHwnd());
 	ImGui_ImplDX12_Init(device, swapChainDesc.BufferCount,
 		rtvDesc.Format,
 		srvDescriptorHeap,
@@ -1053,7 +1036,7 @@ int WINAPI WinMain(
 				{0.0f,0.0f,-5.0f}
 			};
 			//transform.rotate.y += 0.03f;
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
@@ -1064,7 +1047,7 @@ int WINAPI WinMain(
 			// Sprite用のWorldViewProjectionMatrixを作る
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApiManager::kClientWidth), float(WinApiManager::kClientHeight), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
 			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
 
@@ -1183,8 +1166,8 @@ int WINAPI WinMain(
 		}
 
 	}
-	//ゲーム終了時にはCOMの終了処理を行っておく
-	CoUninitialize();
+	//WindowsAPIの終了処理
+	winApiManager->Finalize();
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 	//解放処理
@@ -1217,7 +1200,6 @@ int WINAPI WinMain(
 #ifdef _DEBUG
 	debugController->Release();
 #endif
-	CloseWindow(hwnd);
 
 	//リソースチェック
 	IDXGIDebug1* debug;

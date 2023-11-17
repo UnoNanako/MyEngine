@@ -1,6 +1,7 @@
 #include <windows.h>
 #define DIRECTINPUT_VERSION	    0x0800 //DirectInputのバージョン指定
 #include <dinput.h>
+#include "WinApiManager.h"
 #pragma once
 
 //入力
@@ -8,7 +9,7 @@ class Input
 {
 public: //メンバ関数
 	//初期化
-	void Initialize(HINSTANCE hInstance, HWND hwnd);
+	void Initialize(WinApiManager* winApiManager);
 	//更新
 	void Update();
 	//キーが押されているか関数
@@ -22,5 +23,7 @@ private: //メンバ変数
 	//全キーの入力状態を取得する
 	BYTE keys[256] = {};
 	BYTE preKeys[256] = {};
+	//WindowsAPI
+	WinApiManager* winApiManager;
 };
 

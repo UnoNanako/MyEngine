@@ -11,6 +11,16 @@ class DirectXCommon
 public:
 	//初期化
 	void Initialize(WinApiManager* winApiManager);
+	//デバイスの初期化
+	void CreateDevice();
+	//コマンド関連の初期化
+	void InitializeCommand();
+	//スワップチェーンの生成
+	void CreateSwapChain();
+	//深度バッファの生成
+	void ClearDepthBuffer();
+	//各種デスクリプタヒープの生成
+	void CreateEachDescriptorHeap();
 	//ディスクリプタヒープを生成する
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 	//指定番号のCPUデスクリプタハンドルを取得する

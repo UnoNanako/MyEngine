@@ -491,8 +491,6 @@ int WINAPI WinMain(
 	// モデル読み込み
 	ModelData modelData = LoadObjFile("resources/", "plane.obj");
 
-
-
 	const uint32_t kSubdivision = 16; //分割数
 	const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
 
@@ -658,23 +656,6 @@ int WINAPI WinMain(
 	//tを定義。とりあえず60fps固定してあるが、実時間を計測して可変fpsで動かせるようにしておくとなお良い。
 	const float kDeltaTime = 1.0f / 60.0f;
 
-	// ビューポート
-	D3D12_VIEWPORT viewport{};
-	// クライアント領域のサイズと一緒にして画面全体に表示
-	viewport.Width = WinApiManager::kClientWidth;
-	viewport.Height = WinApiManager::kClientHeight;
-	viewport.TopLeftX = 0;
-	viewport.TopLeftY = 0;
-	viewport.MinDepth = 0.0f;
-	viewport.MaxDepth = 1.0f;
-
-	// シザー矩形
-	D3D12_RECT scissorRect{};
-	// 基本的にビューポートと同じ矩形が構成されるようにする
-	scissorRect.left = 0;
-	scissorRect.right = WinApiManager::kClientWidth;
-	scissorRect.top = 0;
-	scissorRect.bottom = WinApiManager::kClientHeight;
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker3.png");

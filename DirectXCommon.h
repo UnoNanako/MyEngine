@@ -23,6 +23,8 @@ public:
 	void CreateEachDescriptorHeap();
 	//ディスクリプタヒープを生成する
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	//レンダーターゲットビューの初期化
+	void InitializeRenderTargetView();
 	//指定番号のCPUデスクリプタハンドルを取得する
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> &descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	//指定番号のGPUデスクリプタハンドルを取得する
@@ -31,6 +33,18 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 	//SRVの指定番号のGPUデスクリプタハンドルを取得する
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+	//深度ステンシルビューの初期化
+	void InitializeDepthStencilView();
+	//フェンスの生成
+	void CreateFence();
+	//ビューポート矩形の初期化
+	void InitializeViewport();
+	//シザリング矩形の初期化
+	void InitializeScissor();
+	//DXCコンパイラの生成
+	void CreateCompiler();
+	//ImGuiの初期化
+	void InitializeImGui();
 private:
 	//DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;

@@ -1,8 +1,8 @@
+#pragma once
 #include <windows.h>
 #define DIRECTINPUT_VERSION	    0x0800 //DirectInputのバージョン指定
 #include <dinput.h>
 #include "WinApiManager.h"
-#pragma once
 
 //入力
 class Input

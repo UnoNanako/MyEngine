@@ -11,6 +11,8 @@ class DirectXCommon
 public:
 	//初期化
 	void Initialize(WinApiManager* winApiManager);
+	//deviceゲッター
+	ID3D12Device* GetDevice() { return device.Get(); }
 private:
 	//DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
@@ -30,7 +32,6 @@ private:
 	const uint32_t descriptorSizeSRV;
 	const uint32_t descriptorSizeRTV;
 	const uint32_t descriptorSizeDSV;
-	ID3D12Device* device;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	//デバイスの初期化

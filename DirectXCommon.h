@@ -4,6 +4,7 @@
 #include <wrl.h>
 #include <array>
 #include "WinApiManager.h"
+#include <dxcapi.h>
 
 //DirectX基盤
 class DirectXCommon
@@ -11,9 +12,20 @@ class DirectXCommon
 public:
 	//初期化
 	void Initialize(WinApiManager* winApiManager);
+	void Terminate(); //Initializeの逆
+	void PreDraw();
+	void PostDraw();
 	//deviceゲッター
 	ID3D12Device* GetDevice() { return device.Get(); }
+	IDxcUtils* GetUtils() { return dxcUtils; }
+	IDxcCompiler3* GetCompiler() { return dxcCompiler; }
+	IDxcIncludeHandler* GetHandler() {return includeHandler; }
+	ID3D12DescriptorHeap* GetRtvDescriptorHeap() { return rtvDescriptorHeap.Get(); }
+	ID3D12DescriptorHeap* GetSrvDescriptorHeap() { return srvDescriptorHeap.Get(); }
+	ID3D12DescriptorHeap* GetDsvDescriptorHeap() { return dsvDescriptorHeap.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList() { return commandList; }
 private:
+	//メンバ変数
 	//DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 	//DXGIファクトリー
@@ -25,15 +37,32 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	//スワップチェーンリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResource;
-
 	ID3D12CommandQueue* commandQueue;
+	//コマンドアロケータを生成する
+	ID3D12CommandAllocator* commandAllocator;
 	ID3D12Resource* depthBuffer;
 	IDXGISwapChain4* swapChain;
-	const uint32_t descriptorSizeSRV;
-	const uint32_t descriptorSizeRTV;
-	const uint32_t descriptorSizeDSV;
+	uint32_t descriptorSizeSRV;
+	uint32_t descriptorSizeRTV;
+	uint32_t descriptorSizeDSV;
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+	IDxcUtils* dxcUtils;
+	IDxcCompiler3* dxcCompiler;
+	IDxcIncludeHandler* includeHandler;
+	ID3D12GraphicsCommandList* commandList;
+	// RTVを2つ作るのでディスクリプタを2つ用意
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	// ビューポート
+	D3D12_VIEWPORT viewport{};
+	// シザー矩形
+	D3D12_RECT scissorRect{};
+	ID3D12Fence* fence;
+	uint64_t fenceValue;
+	HANDLE fenceEvent;
+	UINT backBufferIndex;
+
+	//メンバ関数
 	//デバイスの初期化
 	void CreateDevice();
 	//コマンド関連の初期化

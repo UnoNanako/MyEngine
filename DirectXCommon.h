@@ -15,6 +15,17 @@ public:
 	void Terminate(); //Initializeの逆
 	void PreDraw();
 	void PostDraw();
+	//シェーダーコンパイル関数
+	IDxcBlob* CompileShader(//CompilerするShaderファイルへのパス
+		const std::wstring& filePath,
+		//Compilerに使用するProfile
+		const wchar_t* profile,
+		//初期化で生成したものを3つ
+		IDxcUtils* dxcUtils,
+		IDxcCompiler3* dxcCompiler,
+		IDxcIncludeHandler* IDxcIncludeHandler);
+	//リソースを作る関数
+	ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
 	//deviceゲッター
 	ID3D12Device* GetDevice() { return device.Get(); }
 	IDxcUtils* GetUtils() { return dxcUtils; }
@@ -97,5 +108,6 @@ private:
 	void CreateCompiler();
 	//ImGuiの初期化
 	void InitializeImGui();
+	
 };
 

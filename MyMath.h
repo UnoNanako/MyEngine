@@ -29,7 +29,7 @@ struct Sphere {
 
 //3次元ベクトル関数
 //加算
-Vector3 Add(const Vector3& v1, const Vector3& v2) {
+inline Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	Vector3 ret;
 	ret.x = v1.x + v2.x;
 	ret.y = v1.y + v2.y;
@@ -37,7 +37,7 @@ Vector3 Add(const Vector3& v1, const Vector3& v2) {
 	return ret;
 }
 //減算
-Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
+inline Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
 	Vector3 ret;
 	ret.x = v1.x - v2.x;
 	ret.y = v1.y - v2.y;
@@ -45,7 +45,7 @@ Vector3 Subtract(const Vector3& v1, const Vector3& v2) {
 	return ret;
 }
 //スカラー倍
-Vector3 Multiply(float scalar, const Vector3& v) {
+inline Vector3 Multiply(float scalar, const Vector3& v) {
 	Vector3 ret;
 	ret.x = scalar * v.x;
 	ret.y = scalar * v.y;
@@ -53,19 +53,19 @@ Vector3 Multiply(float scalar, const Vector3& v) {
 	return ret;
 }
 //内積
-float Dot(const Vector3& v1, const Vector3& v2) {
+inline float Dot(const Vector3& v1, const Vector3& v2) {
 	float ret;
 	ret = v1.x * v2.x + v1.y * v2.y;
 	return ret;
 }
 //長さ(ノルム)
-float Length(const Vector3& v) {
+inline float Length(const Vector3& v) {
 	float ret;
 	ret = sqrtf(v.x * v.x + v.y * v.y);
 	return ret;
 }
 //正規化
-Vector3 Normalize(const Vector3& v) {
+inline Vector3 Normalize(const Vector3& v) {
 	Vector3 ret;
 	float length = Length(v);
 	if (length >= 0.0001f) { //0除算を防ぐため
@@ -78,7 +78,7 @@ Vector3 Normalize(const Vector3& v) {
 
 //4x4行列関数
 //1.行列の加法
-Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
+inline Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 ret;
 	ret.m[0][0] = m1.m[0][0] + m2.m[0][0];
 	ret.m[0][1] = m1.m[0][1] + m2.m[0][1];
@@ -100,7 +100,7 @@ Matrix4x4 Add(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 //2.行列の減法
-Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
+inline Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 ret;
 	ret.m[0][0] = m1.m[0][0] - m2.m[0][0];
 	ret.m[0][1] = m1.m[0][1] - m2.m[0][1];
@@ -122,7 +122,7 @@ Matrix4x4 Subtract(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 //3.行列の積
-Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
+inline Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	Matrix4x4 ret;
 	ret.m[0][0] = m1.m[0][0] * m2.m[0][0] + m1.m[0][1] * m2.m[1][0] + m1.m[0][2] * m2.m[2][0] + m1.m[0][3] * m2.m[3][0];
 	ret.m[0][1] = m1.m[0][0] * m2.m[0][1] + m1.m[0][1] * m2.m[1][1] + m1.m[0][2] * m2.m[2][1] + m1.m[0][3] * m2.m[3][1];
@@ -144,7 +144,7 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 }
 
 //4.逆行列
-Matrix4x4 Inverse(const Matrix4x4& m) {
+inline Matrix4x4 Inverse(const Matrix4x4& m) {
 	Matrix4x4 ret;
 	ret.m[0][0] = m.m[1][1] * m.m[2][2] * m.m[3][3] + m.m[1][2] * m.m[2][3] * m.m[3][1] + m.m[1][3] * m.m[2][1] * m.m[3][2] - m.m[1][1] * m.m[2][3] * m.m[3][2] - m.m[1][2] * m.m[2][1] * m.m[3][3] - m.m[1][3] * m.m[2][2] * m.m[3][1];
 	ret.m[0][1] = m.m[0][1] * m.m[2][3] * m.m[3][2] + m.m[0][2] * m.m[2][1] * m.m[3][3] + m.m[0][3] * m.m[2][2] * m.m[3][1] - m.m[0][1] * m.m[2][2] * m.m[3][3] - m.m[0][2] * m.m[2][3] * m.m[3][1] - m.m[0][3] * m.m[2][1] * m.m[3][2];
@@ -169,7 +169,7 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 }
 
 //5.転置行列
-Matrix4x4 Transpose(const Matrix4x4& m) {
+inline Matrix4x4 Transpose(const Matrix4x4& m) {
 	Matrix4x4 ret;
 	ret.m[0][0] = m.m[0][0];
 	ret.m[0][1] = m.m[1][0];
@@ -191,7 +191,7 @@ Matrix4x4 Transpose(const Matrix4x4& m) {
 }
 
 //6.単位行列の生成
-Matrix4x4 MakeIdentity4x4() {
+inline Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 ret;
 	ret.m[0][0] = 1.0f;
 	ret.m[0][1] = 0.0f;
@@ -213,7 +213,7 @@ Matrix4x4 MakeIdentity4x4() {
 }
 
 //7.平行移動行列
-Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
+inline Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 	Matrix4x4 ret;
 	ret.m[0][0] = 1.0f;
 	ret.m[0][1] = 0.0f;
@@ -235,7 +235,7 @@ Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 }
 
 //8. 拡大縮小行列
-Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
+inline Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	Matrix4x4 ret;
 	ret.m[0][0] = scale.x;
 	ret.m[0][1] = 0.0f;
@@ -257,7 +257,7 @@ Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 }
 
 //9. 座標変換
-Vector3 Transform(const Vector3& v, const Matrix4x4& m) {
+inline Vector3 Transform(const Vector3& v, const Matrix4x4& m) {
 	Vector3 ret;
 	ret.x = v.x * m.m[0][0] + v.y * m.m[1][0] + v.z * m.m[2][0] + m.m[3][0];
 	ret.y = v.x * m.m[0][1] + v.y * m.m[1][1] + v.z * m.m[2][1] + m.m[3][1];
@@ -266,7 +266,7 @@ Vector3 Transform(const Vector3& v, const Matrix4x4& m) {
 }
 
 //10. x軸回転行列
-Matrix4x4 MakeRotateXMatrix(float radian) {
+inline Matrix4x4 MakeRotateXMatrix(float radian) {
 	Matrix4x4 ret;
 	ret.m[0][0] = 1.0f;
 	ret.m[0][1] = 0.0f;
@@ -288,7 +288,7 @@ Matrix4x4 MakeRotateXMatrix(float radian) {
 }
 
 //11. y軸回転行列
-Matrix4x4 MakeRotateYMatrix(float radian) {
+inline Matrix4x4 MakeRotateYMatrix(float radian) {
 	Matrix4x4 ret;
 	ret.m[0][0] = std::cos(radian);
 	ret.m[0][1] = 0.0f;
@@ -310,7 +310,7 @@ Matrix4x4 MakeRotateYMatrix(float radian) {
 }
 
 //12. z軸回転行列
-Matrix4x4 MakeRotateZMatrix(float radian) {
+inline Matrix4x4 MakeRotateZMatrix(float radian) {
 	Matrix4x4 ret;
 	ret.m[0][0] = std::cos(radian);
 	ret.m[0][1] = std::sin(radian);
@@ -332,7 +332,7 @@ Matrix4x4 MakeRotateZMatrix(float radian) {
 }
 
 //13. 3次元アフィン変換行列
-Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
+inline Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 	Matrix4x4 ret;
 	Matrix4x4 scaleMatrix = MakeScaleMatrix(scale);
 	Matrix4x4 rotateXMatrix = MakeRotateXMatrix(rotate.x);
@@ -347,7 +347,7 @@ Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Ve
 }
 
 //14. 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
+inline Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
 	Matrix4x4 ret;
 	float dot = farClip * nearClip;
 	float tan = std::tan(fovY / 2.0f);
@@ -371,7 +371,7 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 }
 
 //15. 正射影行列(平行投影行列)
-Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+inline Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
 	Matrix4x4 ret;
 	ret.m[0][0] = 2.0f / (right - 1.0f);
 	ret.m[0][1] = 0.0f;
@@ -393,7 +393,7 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 }
 
 //16. ビューポート変換行列
-Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
+inline Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, float minDepth, float maxDepth) {
 	Matrix4x4 ret;
 	ret.m[0][0] = width / 2.0f;
 	ret.m[0][1] = 0.0f;
@@ -412,9 +412,4 @@ Matrix4x4 MakeViewportMatrix(float left, float top, float width, float height, f
 	ret.m[3][2] = minDepth;
 	ret.m[3][3] = 1.0f;
 	return ret;
-}
-
-//球の描画
-void DrawSphere(const Sphere& sphere, const Matrix4x4& viewProjectionMatrix, const Matrix4x4& viewportMatrix, uint32_t color) {
-
 }

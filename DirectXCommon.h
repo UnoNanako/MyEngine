@@ -5,6 +5,7 @@
 #include <array>
 #include "WinApiManager.h"
 #include <dxcapi.h>
+#include <string>
 
 //DirectX基盤
 class DirectXCommon
@@ -26,6 +27,9 @@ public:
 		IDxcIncludeHandler* IDxcIncludeHandler);
 	//リソースを作る関数
 	ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+	//デスクリプタヒープの添え字をずらす関数
+	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);
 	//deviceゲッター
 	ID3D12Device* GetDevice() { return device.Get(); }
 	IDxcUtils* GetUtils() { return dxcUtils; }

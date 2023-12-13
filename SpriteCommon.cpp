@@ -4,5 +4,6 @@
 
 void SpriteCommon::Initialize()
 {
+
 }
 

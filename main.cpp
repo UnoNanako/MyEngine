@@ -23,16 +23,12 @@
 #include "VertexData.h"
 #include "Material.h"
 #include "Texture.h"
+#include "Model.h"
 
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
 
 using namespace std;
-
-//モデルデータ
-struct ModelData {
-	vector<VertexData> vertices;
-};
 
 //Particle構造体
 struct Particle {
@@ -55,69 +51,6 @@ struct DirectionalLight {
 	Vector3 direction; //ライトの向き
 	float intensity; //輝度
 };
-
-//Objファイルを読む関数
-ModelData LoadObjFile(const string& directoryPath, const string& filename)
-{
-	//1. 中で必要となる変数の宣言
-	ModelData modelData; //構築するModelData
-	vector<Vector4> positions; //位置
-	vector<Vector3> normals; //法線
-	vector<Vector2> texcoords; //テクスチャ座標
-	string line; //ファイルから呼んだ1行を格納するもの
-
-	//2. ファイルを開く
-	ifstream file(directoryPath + "/" + filename); //ファイルを開く
-	assert(file.is_open()); //とりあえず開けなかったら止める
-
-	//3. 実際にファイルを読み、ModelDataを構築していく
-	while (getline(file, line)) {
-		string identifire;
-		istringstream s(line);
-		s >> identifire; //先頭の識別子を読む
-
-		//identifireに応じた処理
-		//頂点情報を読む
-		if (identifire == "v") {
-			Vector4 position;
-			s >> position.x >> position.y >> position.z;
-			position.w = 1.0f;
-			positions.push_back(position);
-		}
-		else if (identifire == "vt") {
-			Vector2 texcoord;
-			s >> texcoord.x >> texcoord.y;
-			texcoords.push_back(texcoord);
-		}
-		else if (identifire == "vn") {
-			Vector3 normal;
-			s >> normal.x >> normal.y >> normal.z;
-			normals.push_back(normal);
-		}
-		else if (identifire == "f") {
-			//面は三角形限定。その他は未対応
-			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
-				string vertexDefinition;
-				s >> vertexDefinition;
-				//頂点の要素へのIndexは「位置/UV/法線」で格納されているので、分解してIndexを取得する
-				std::istringstream v(vertexDefinition);
-				uint32_t elementIndices[3];
-				for (int32_t element = 0; element < 3; ++element) {
-					std::string index;
-					std::getline(v, index, '/');// /区切りでインデックスを読んでいく
-					elementIndices[element] = std::stoi(index);
-				}
-				// 要素へのIndexから、実際の要素の値を取得して、頂点を構築する
-				Vector4 position = positions[elementIndices[0] - 1];
-				Vector2 texcoord = texcoords[elementIndices[1] - 1];
-				Vector3 normal = normals[elementIndices[2] - 1];
-				VertexData vertex = { position, texcoord };
-				modelData.vertices.push_back(vertex);
-			}
-		}
-	}
-	return modelData;
-}
 
 //Particle生成関数
 Particle MakeNewParticle(std::mt19937& randomEngine) {
@@ -154,6 +87,8 @@ int WINAPI WinMain(
 	input->Initialize(winApiManager);
 	DirectXCommon* dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApiManager);
+	//モデルの初期化
+	Model* model = new Model;
 	
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;  // 0から始まる
@@ -309,7 +244,7 @@ int WINAPI WinMain(
 	wvpData->World = MakeIdentity4x4();
 
 	// モデル読み込み
-	ModelData modelData = LoadObjFile("resources/", "plane.obj");
+	ModelData modelData = model->LoadObjFile("resources/", "plane.obj");
 
 	const uint32_t kSubdivision = 16; //分割数
 	const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
@@ -337,7 +272,8 @@ int WINAPI WinMain(
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
+	//std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
+
 	//// 左下
 	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
 	//vertexData[0].texcoord = { 0.0f,1.0f };
@@ -585,5 +521,6 @@ int WINAPI WinMain(
 	delete dxCommon;
 	delete spriteCommon;
 	delete sprite;
+	delete model;
 	return 0;
 }

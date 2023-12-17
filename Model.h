@@ -1,9 +1,18 @@
 #pragma once
-#include <vector>
-#include "VertexData.h"
-#include "Material.h"
+#include <d3d12.h>
 #include <string>
+#include "Transform.h"
+#include "Material.h"
+#include <vector>
+#include <Windows.h>
+
 using namespace std;
+
+class DirectXCommon;
+class Texture;
+struct Material;
+struct TransformationMatrix;
+struct VertexData;
 
 //モデルデータ
 struct ModelData {
@@ -14,8 +23,20 @@ struct ModelData {
 class Model
 {
 public:
+	void Create(DirectXCommon* dxCommon,const std::string& filePath);
+	void Update();
+	void Draw(ID3D12GraphicsCommandList* commandList);
 	//マテリアルデータを読む関数
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	//OBJファイルを読む関数
-	ModelData LoadObjFile(const string& directoryPath, const string& filename);
+	void LoadObjFile(const std::string& filePath);
+private:
+	ID3D12Resource* vertexResource;
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	ID3D12Resource* materialResource;
+	Material* materialData;
+	ID3D12Resource* transformationMatrixResource;
+	TransformationMatrix* transformationMatrixData;
+	Transform transform;
+	ModelData modelData;
 };

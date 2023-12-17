@@ -244,7 +244,7 @@ int WINAPI WinMain(
 	wvpData->World = MakeIdentity4x4();
 
 	// モデル読み込み
-	ModelData modelData = model->LoadObjFile("resources/", "plane.obj");
+	model->Create(dxCommon, "resources/plane.obj");
 
 	const uint32_t kSubdivision = 16; //分割数
 	const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
@@ -272,7 +272,7 @@ int WINAPI WinMain(
 	VertexData* vertexData = nullptr;
 	// 書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());// 頂点データをリソースにコピー
+	
 
 	//// 左下
 	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -447,6 +447,7 @@ int WINAPI WinMain(
 			wvpData->WVP = worldViewProjectionMatrix;
 
 			sprite->Update();
+			model->Update();
 
 			///--------------------更新処理ここまで--------------------
 
@@ -481,8 +482,9 @@ int WINAPI WinMain(
 			// Spriteの描画。変更が必要なものだけ変更する
 			dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);   // VBVを設定
 			// 描画！6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
-			dxCommon->GetCommandList()->DrawInstanced(kVertexCount, 1, 0, 0);
+			//dxCommon->GetCommandList()->DrawInstanced(kVertexCount, 1, 0, 0);
 			sprite->Draw(dxCommon->GetCommandList());
+			model->Draw(dxCommon->GetCommandList());
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
 

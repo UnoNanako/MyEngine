@@ -24,6 +24,7 @@
 #include "Material.h"
 #include "Texture.h"
 #include "Model.h"
+#include "SphereModel.h"
 
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
@@ -81,14 +82,30 @@ int WINAPI WinMain(
 	//WindowsAPIの初期化
 	winApiManager = new WinApiManager();
 	winApiManager->Initialize();
-	Input* input = nullptr;
+
 	//入力の初期化
+	Input* input = nullptr;
 	input = new Input();
 	input->Initialize(winApiManager);
 	DirectXCommon* dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApiManager);
+
+	//スプライト共通部分の初期化
+	SpriteCommon* spriteCommon = new SpriteCommon;
+	spriteCommon->Initialize();
+	//スプライトの初期化
+	Sprite* sprite = new Sprite();
+	sprite->Create(dxCommon, "resources/UVChecker3.png");
+
 	//モデルの初期化
 	Model* model = new Model;
+	// モデル読み込み
+	model->Create(dxCommon, "resources/plane.obj");
+	
+	//球体の初期化
+	SphereModel* sphere = new SphereModel;
+	//球体の読み込み
+	sphere->Create(dxCommon);
 	
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;  // 0から始まる
@@ -130,15 +147,6 @@ int WINAPI WinMain(
 	staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL; // PixelShaderで使う
 	descriptionRootSignature.pStaticSamplers = staticSamplers;
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
-
-	//スプライト共通部分の初期化
-	SpriteCommon* spriteCommon = nullptr;
-	spriteCommon = new SpriteCommon;
-	spriteCommon->Initialize();
-
-	//スプライトの初期化
-	Sprite* sprite = new Sprite();
-	sprite->Create(dxCommon,"resources/UVChecker3.png");
 
 	//シリアライズしてバイナリにする
 	ID3DBlob* signatureBlob = nullptr;
@@ -219,8 +227,8 @@ int WINAPI WinMain(
 	// Depthの機能を有効化する
 	depthStencilDesc.DepthEnable = true;
 	// 書き込みします
-	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
-	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; //Depthの書き込みを行わない
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	//depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO; //Depthの書き込みを行わない
 	// 比較関数はLessEqual。つまり、近ければ描画される
 	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
 
@@ -233,47 +241,8 @@ int WINAPI WinMain(
 	hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
-	//WVP用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	ID3D12Resource* wvpResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpData = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	//単位行列を書き込んでおく
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
-
-	// モデル読み込み
-	model->Create(dxCommon, "resources/plane.obj");
-
-	const uint32_t kSubdivision = 16; //分割数
-	const uint32_t kVertexCount = kSubdivision * kSubdivision * 6;//球体頂点数
-
-	// Transform変数を作る
-	Transform transform{ {1.0f, 1.0f, 1.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 0.0f} };
-	//頂点リソースを作る
-	ID3D12Resource* vertexResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * kVertexCount);
 	
-	// 頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	
-	// リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	
-	// 使用するリソースのサイズは頂点3つ分のサイズ
-	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * kVertexCount); //使用するリソースのサイズは頂点のサイズ
-	
-	// 1頂点あたりのサイズ
-	//vertexBufferView.StrideInBytes = sizeof(VertexData);
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	
-
-	// 頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-	// 書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	
-
 	//// 左下
 	//vertexData[0].position = { -0.5f, -0.5f, 0.0f, 1.0f };
 	//vertexData[0].texcoord = { 0.0f,1.0f };
@@ -293,69 +262,6 @@ int WINAPI WinMain(
 	////右下2
 	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	//vertexData[5].texcoord = { 1.0f, 1.0f };
-
-	//球体用頂点
-
-	const float kPi = std::numbers::pi_v<float>;
-	const float kLonEvery = (2 * kPi) / float(kSubdivision); //経度分割1つ分の角度
-	const float kLatEvery = kPi / float(kSubdivision); //緯度分割1つ分の角度
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -kPi / 2.0f + kLatEvery * latIndex;
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;
-			//a
-			vertexData[start].position.x = cos(lat) * cos(lon);
-			vertexData[start].position.y = sin(lat);
-			vertexData[start].position.z = cos(lat) * sin(lon);
-			vertexData[start].position.w = 1.0f;
-			vertexData[start].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
-			//b
-			vertexData[start + 1].position.x = cos(lat + kLatEvery) * cos(lon);
-			vertexData[start + 1].position.y = sin(lat + kLatEvery);
-			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
-			vertexData[start + 1].position.w = 1.0f;
-			vertexData[start + 1].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start + 1].texcoord.y = 1.0 - float(latIndex + 1) / float(kSubdivision);
-			vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
-			vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
-			vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
-			//c
-			vertexData[start + 2].position.x = cos(lat) * cos(lon + kLonEvery);
-			vertexData[start + 2].position.y = sin(lat);
-			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
-			vertexData[start + 2].position.w = 1.0f;
-			vertexData[start + 2].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 2].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
-			vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
-			vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
-			vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
-			//c
-			vertexData[start + 3] = vertexData[start + 2];
-			vertexData[start + 3].normal.x = vertexData[start + 3].position.x;
-			vertexData[start + 3].normal.y = vertexData[start + 3].position.y;
-			vertexData[start + 3].normal.z = vertexData[start + 3].position.z;
-			//b
-			vertexData[start + 4] = vertexData[start + 1];
-			vertexData[start + 4].normal.x = vertexData[start + 4].position.x;
-			vertexData[start + 4].normal.y = vertexData[start + 4].position.y;
-			vertexData[start + 4].normal.z = vertexData[start + 4].position.z;
-			//d
-			vertexData[start + 5].position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
-			vertexData[start + 5].position.y = sin(lat + kLatEvery);
-			vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
-			vertexData[start + 5].position.w = 1.0f;
-			vertexData[start + 5].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 5].texcoord.y = 1.0 - float(latIndex + 1) / float(kSubdivision);
-			vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
-			vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
-			vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
-		}
-	}
 
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(Material));
@@ -433,21 +339,9 @@ int WINAPI WinMain(
 				OutputDebugStringA("Hit 0\n");
 			}
 
-			Transform cameraTransform{
-				{1.0f,1.0f,1.0f},
-				{0.0f,0.0f,0.0f},
-				{0.0f,0.0f,-5.0f}
-			};
-			//transform.rotate.y += 0.03f;
-			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-			Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-			wvpData->WVP = worldViewProjectionMatrix;
-
 			sprite->Update();
 			model->Update();
+			sphere->Update();
 
 			///--------------------更新処理ここまで--------------------
 
@@ -468,8 +362,7 @@ int WINAPI WinMain(
 			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
 			texture->Bind(dxCommon->GetCommandList());
-			//wvp用のCBufferの場所を設定
-			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+			
 			//DirectionalLightの場所を設定
 			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 			ImGui::Begin("Window");
@@ -479,11 +372,9 @@ int WINAPI WinMain(
 			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
-			// Spriteの描画。変更が必要なものだけ変更する
-			dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);   // VBVを設定
-			// 描画！6頂点の板ポリゴンを、kNumInstance(今回は10)だけInstance描画を行う
-			//dxCommon->GetCommandList()->DrawInstanced(kVertexCount, 1, 0, 0);
+
 			sprite->Draw(dxCommon->GetCommandList());
+			sphere->Draw(dxCommon->GetCommandList());
 			model->Draw(dxCommon->GetCommandList());
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
@@ -496,9 +387,7 @@ int WINAPI WinMain(
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 	//解放処理
-	wvpResource->Release();
 	materialResource->Release();
-	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {

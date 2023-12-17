@@ -45,7 +45,7 @@ void WinApiManager::Initialize()
 	//ウィンドウの生成
 	hwnd = CreateWindow(
 		wc.lpszClassName, //利用するクラス名
-		L"CG2", //タイトルバーの文字(なんでもいい)
+		L"GameTitle", //タイトルバーの文字(なんでもいい)
 		WS_OVERLAPPEDWINDOW, //よく見るウィンドウスタイル
 		CW_USEDEFAULT, //表示X座標(Windowsに任せる)
 		CW_USEDEFAULT, //表示y座標(WindowsOSに任せる)

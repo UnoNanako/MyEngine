@@ -262,15 +262,15 @@ int WINAPI WinMain(
 	//vertexData[5].texcoord = { 1.0f, 1.0f };
 
 	//インデックス
-	ID3D12Resource* indexResourceSprite = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(uint32_t) * 6);
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
-	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-	uint32_t* indexDataSprite = nullptr;
-	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
+	///ID3D12Resource* indexResourceSprite = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(uint32_t) * 6);
+	///D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	///indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
+	///indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+	///indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+	///uint32_t* indexDataSprite = nullptr;
+	///indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	///indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	///indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
 	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
 	ID3D12Resource* materialResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(Material));
@@ -373,7 +373,7 @@ int WINAPI WinMain(
 			texture->Bind(dxCommon->GetCommandList());
 
 			//インデックス
-			dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+			///dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
 			
 			//DirectionalLightの場所を設定
 			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
@@ -390,7 +390,7 @@ int WINAPI WinMain(
 			model->Draw(dxCommon->GetCommandList());
 
 			//インデックス
-			dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+			///dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());

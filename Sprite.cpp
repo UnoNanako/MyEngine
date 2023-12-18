@@ -12,10 +12,20 @@ void Sprite::Create(DirectXCommon* dxCommon, const std::string& filePath)
 	texture = new Texture();
 	texture->Create(dxCommon,filePath);
 
+	//インデックス
+	indexResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(uint32_t) * 6);
+	indexBufferView.BufferLocation = indexResource->GetGPUVirtualAddress();
+	indexBufferView.SizeInBytes = sizeof(uint32_t) * 6;
+	indexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	indexData = nullptr;
+	indexResource->Map(0, nullptr, reinterpret_cast<void**>(&indexData));
+	indexData[0] = 0; indexData[1] = 1; indexData[2] = 2;
+	indexData[3] = 1; indexData[4] = 3; indexData[5] = 2;
+
 	//頂点
-	vertexResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * 6);
+	vertexResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * 4);
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 4;
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 
 	// 頂点リソースにデータを書き込む
@@ -33,16 +43,9 @@ void Sprite::Create(DirectXCommon* dxCommon, const std::string& filePath)
 	// 左下
 	vertexData[2].position = { 0.0f, height, 0.0f, 1.0f };
 	vertexData[2].texcoord = { 0.0f,1.0f };
-
-	//右上2
-	vertexData[3].position = { width,0.0f,0.0f,1.0f };
-	vertexData[3].texcoord = { 1.0f,0.0f };
 	//右下
-	vertexData[4].position = { width,height,0.0f,1.0f };
-	vertexData[4].texcoord = { 1.0f,1.0f };
-	//左下2
-	vertexData[5].position = { 0.0f,height,0.0f,1.0f };
-	vertexData[5].texcoord = { 0.0f, 1.0f };
+	vertexData[3].position = { width,height,0.0f,1.0f };
+	vertexData[3].texcoord = { 1.0f,1.0f };
 
 	//色
 	//Sprite用のマテリアルリソースを作る
@@ -83,5 +86,6 @@ void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	texture->Bind(commandList);
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-	commandList->DrawInstanced(6, 1, 0, 0);
+	commandList->IASetIndexBuffer(&indexBufferView);
+	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }

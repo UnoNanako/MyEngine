@@ -8,6 +8,7 @@
 #include <sstream>
 #include <random>
 #include <numbers>
+#include <wrl.h>
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -100,7 +101,7 @@ int WINAPI WinMain(
 	//モデルの初期化
 	Model* model = new Model;
 	// モデル読み込み
-	model->Create(dxCommon, "resources/plane.obj");
+	model->Create(dxCommon, "resources/usagi.obj");
 	
 	//球体の初期化
 	SphereModel* sphere = new SphereModel;
@@ -149,8 +150,8 @@ int WINAPI WinMain(
 	descriptionRootSignature.NumStaticSamplers = _countof(staticSamplers);
 
 	//シリアライズしてバイナリにする
-	ID3DBlob* signatureBlob = nullptr;
-	ID3DBlob* errorBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> signatureBlob = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> errorBlob = nullptr;
 	HRESULT hr;
 	hr = D3D12SerializeRootSignature(&descriptionRootSignature, D3D_ROOT_SIGNATURE_VERSION_1, &signatureBlob, &errorBlob);
 	if (FAILED(hr)) {
@@ -158,7 +159,7 @@ int WINAPI WinMain(
 		assert(false);
 	}
 	//バイナリを元に生成
-	ID3D12RootSignature* rootSignature = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	hr = dxCommon->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(hr));
@@ -202,14 +203,14 @@ int WINAPI WinMain(
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// Shaderをコンパイルする
-	IDxcBlob* vertexShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
 	assert(vertexShaderBlob != nullptr);
 
-	IDxcBlob* pixelShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
 	assert(pixelShaderBlob != nullptr);
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	graphicsPipelineStateDesc.pRootSignature = rootSignature;// RootSignature
+	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();// RootSignature
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;// InputLayout
 	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(), vertexShaderBlob->GetBufferSize() };// VertexShader
 	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(), pixelShaderBlob->GetBufferSize() };// PixelShader
@@ -237,7 +238,7 @@ int WINAPI WinMain(
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// 実際に生成
-	ID3D12PipelineState* graphicsPipelineState = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
 	hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
@@ -271,17 +272,6 @@ int WINAPI WinMain(
 	///indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
 	///indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	///indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
-
-	// マテリアル用のリソースを作る。今回はcolor1つ分のサイズを用意する
-	ID3D12Resource* materialResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(Material));
-	// マテリアルにデータを書き込む
-	Material* materialData = nullptr;
-	// 書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	// 今回は赤を書き込んでみる
-	Vector4 color = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
-	materialData->color = color;
-	materialData->enableLighting = 1;
 
 	//Instancing用にTransformationMatrixを10コ格納できるResourceを作る
 	const uint32_t kNumMaxInstance = 10; //インスタンス数
@@ -362,31 +352,31 @@ int WINAPI WinMain(
 			ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon->GetSrvDescriptorHeap() };
 			dxCommon->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
 			// RootSignatureを設定。PSOに設定しているけど別途設定が必要
-			dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature);
-			dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState);   // PSOを設定
+			dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+			dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());   // PSOを設定
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);   // VBVを設定
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
-			dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			// マテリアルCBufferの場所を設定
-			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			//SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
-			texture->Bind(dxCommon->GetCommandList());
+			//dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			//// マテリアルCBufferの場所を設定
+			//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			////SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
+			//texture->Bind(dxCommon->GetCommandList());
 
-			//インデックス
-			///dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-			
-			//DirectionalLightの場所を設定
-			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			ImGui::Begin("Window");
-			ImGui::ColorEdit4("Alpha", &color.x);
-			materialData->color = color;
-			ImGui::End();
+			////インデックス
+			/////dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+			//
+			////DirectionalLightの場所を設定
+			//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			//ImGui::Begin("Window");
+			//ImGui::ColorEdit4("Alpha", &color.x);
+			//materialData->color = color;
+			//ImGui::End();
 			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
 			sprite->Draw(dxCommon->GetCommandList());
-			sphere->Draw(dxCommon->GetCommandList());
+			//sphere->Draw(dxCommon->GetCommandList());
 			model->Draw(dxCommon->GetCommandList());
 
 			//インデックス
@@ -403,23 +393,23 @@ int WINAPI WinMain(
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 	//解放処理
-	materialResource->Release();
-	graphicsPipelineState->Release();
-	signatureBlob->Release();
-	if (errorBlob) {
-		errorBlob->Release();
-	}
-	rootSignature->Release();
-	pixelShaderBlob->Release();
-	vertexShaderBlob->Release();
+	///materialResource->Release();
+	///graphicsPipelineState->Release();
+	///signatureBlob->Release();
+	///if (errorBlob) {
+	///	errorBlob->Release();
+	///}
+	///rootSignature->Release();
+	///pixelShaderBlob->Release();
+	///vertexShaderBlob->Release();
 
 	//リソースチェック
-	IDXGIDebug1* debug;
+	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
 		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		debug->Release();
+		///debug->Release();
 	}
 
 	//入力解放
@@ -429,5 +419,6 @@ int WINAPI WinMain(
 	delete spriteCommon;
 	delete sprite;
 	delete model;
+
 	return 0;
 }

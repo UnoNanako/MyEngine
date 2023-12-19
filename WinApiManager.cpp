@@ -59,10 +59,6 @@ void WinApiManager::Initialize()
 	ShowWindow(hwnd, SW_SHOW);
 }
 
-void WinApiManager::Update()
-{
-}
-
 void WinApiManager::Finalize()
 {
 	CloseWindow(hwnd);

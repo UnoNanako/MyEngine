@@ -32,24 +32,24 @@ public:
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);
 	//deviceゲッター
 	ID3D12Device* GetDevice() { return device.Get(); }
-	IDxcUtils* GetUtils() { return dxcUtils; }
-	IDxcCompiler3* GetCompiler() { return dxcCompiler; }
-	IDxcIncludeHandler* GetHandler() {return includeHandler; }
+	IDxcUtils* GetUtils() { return dxcUtils.Get(); }
+	IDxcCompiler3* GetCompiler() { return dxcCompiler.Get(); }
+	IDxcIncludeHandler* GetHandler() {return includeHandler.Get(); }
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap() { return rtvDescriptorHeap.Get(); }
 	ID3D12DescriptorHeap* GetSrvDescriptorHeap() { return srvDescriptorHeap.Get(); }
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap() { return dsvDescriptorHeap.Get(); }
-	ID3D12GraphicsCommandList* GetCommandList() { return commandList; }
+	ID3D12GraphicsCommandList* GetCommandList() { return commandList.Get(); }
 private:
 	//メンバ変数
 	//DXGIファクトリー
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	//DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
-	ID3D12CommandQueue* commandQueue;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
 	//コマンドアロケータを生成する
-	ID3D12CommandAllocator* commandAllocator;
-	ID3D12GraphicsCommandList* commandList;
-	IDXGISwapChain4* swapChain;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
@@ -58,18 +58,18 @@ private:
 	uint32_t descriptorSizeDSV;
 	//スワップチェーンリソース
 	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResource;
-	ID3D12Resource* depthBuffer;
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthBuffer;
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
-	IDxcUtils* dxcUtils;
-	IDxcCompiler3* dxcCompiler;
-	IDxcIncludeHandler* includeHandler;
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler;
 	// RTVを2つ作るのでディスクリプタを2つ用意
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
 	// ビューポート
 	D3D12_VIEWPORT viewport{};
 	// シザー矩形
 	D3D12_RECT scissorRect{};
-	ID3D12Fence* fence;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	uint64_t fenceValue;
 	HANDLE fenceEvent;
 	UINT backBufferIndex;

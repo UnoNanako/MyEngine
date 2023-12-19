@@ -292,7 +292,7 @@ int WINAPI WinMain(
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	//DirectionalLight用のResource
-	ID3D12Resource* directionalLightResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(DirectionalLight));
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(DirectionalLight));
 	//データを書き込む
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレスを取得
@@ -402,6 +402,16 @@ int WINAPI WinMain(
 	///rootSignature->Release();
 	///pixelShaderBlob->Release();
 	///vertexShaderBlob->Release();
+	
+	//入力解放
+	delete input;
+	delete winApiManager;
+	delete dxCommon;
+	delete spriteCommon;
+	delete sprite;
+	delete model;
+	delete texture;
+	delete sphere;
 
 	//リソースチェック
 	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
@@ -412,13 +422,7 @@ int WINAPI WinMain(
 		///debug->Release();
 	}
 
-	//入力解放
-	delete input;
-	delete winApiManager;
-	delete dxCommon;
-	delete spriteCommon;
-	delete sprite;
-	delete model;
+	
 
 	return 0;
 }

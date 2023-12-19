@@ -1,6 +1,7 @@
 #pragma once
 #include <numbers>
 #include <d3d12.h>
+#include <wrl.h>
 #include "Transform.h"
 
 class DirectXCommon;
@@ -21,13 +22,13 @@ public:
 	const float kLatEvery = kPi / float(kSubdivision); //緯度分割1つ分の角度
 	Transform transform;
 	Transform cameraTransform;
-	ID3D12Resource* vertexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	VertexData* vertexData;
-	ID3D12Resource* materialResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	Material* materialData;
 	TransformationMatrix* wvpData;
-	ID3D12Resource* wvpResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> wvpResource;
 	
 };
 

@@ -2,6 +2,7 @@
 #include "externals/DirectXTex/DirectXTex.h"
 #include <string>
 #include <d3d12.h>
+#include <wrl.h>
 
 class DirectXCommon;
 
@@ -13,7 +14,7 @@ public:
 	uint32_t GetWidth() { return width; }
 	uint32_t GetHeight() { return height; }
 private:
-	ID3D12Resource* textureResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource;
 	uint32_t width;
 	uint32_t height;
 	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU;

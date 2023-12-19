@@ -9,7 +9,7 @@ void Texture::Create(DirectXCommon* dxCommon,const std::string& filePath)
 	DirectX::ScratchImage mipImages = LoadTexture(filePath);
 	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 	textureResource = CreateTextureResource(dxCommon->GetDevice(), metadata);
-	UploadTextureData(textureResource, mipImages);
+	UploadTextureData(textureResource.Get(), mipImages);
 
 	//ShaderResourceViewの作成
 	//metadataを基にSRVの設定
@@ -22,7 +22,7 @@ void Texture::Create(DirectXCommon* dxCommon,const std::string& filePath)
 	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxCommon->GetCPUDescriptorHandle(index);
 	textureSrvHandleGPU = dxCommon->GetGPUDescriptorHandle(index);
 	// SRVの生成
-	dxCommon->GetDevice()->CreateShaderResourceView(textureResource, &srvDesc, textureSrvHandleCPU);
+	dxCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
 	++index;
 }
 

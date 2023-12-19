@@ -89,3 +89,8 @@ void Sprite::Draw(ID3D12GraphicsCommandList* commandList)
 	commandList->IASetIndexBuffer(&indexBufferView);
 	commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 }
+
+Sprite::~Sprite()
+{
+	delete texture;
+}

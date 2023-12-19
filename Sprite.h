@@ -1,6 +1,7 @@
 #pragma once
 #include <d3d12.h>
 #include <string>
+#include <wrl.h>
 #include "Transform.h"
 
 class DirectXCommon;
@@ -16,16 +17,17 @@ public:
 	void Update();
 	void Draw(ID3D12GraphicsCommandList *commandList);
 	void SetTransform(Transform transform) { this->transform = transform; }
+	~Sprite();
 private:
 	Texture* texture;
-	ID3D12Resource* vertexResource;
-	ID3D12Resource* indexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> indexResource;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	D3D12_INDEX_BUFFER_VIEW indexBufferView{};
 	uint32_t* indexData;
-	ID3D12Resource* materialResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	Material* materialData;
-	ID3D12Resource* transformationMatrixResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	TransformationMatrix* transformationMatrixData;
 	Transform transform;
 };

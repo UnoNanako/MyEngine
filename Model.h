@@ -5,6 +5,7 @@
 #include "Material.h"
 #include <vector>
 #include <Windows.h>
+#include <wrl.h>
 
 using namespace std;
 
@@ -31,11 +32,11 @@ public:
 	//OBJファイルを読む関数
 	void LoadObjFile(const std::string& filePath);
 private:
-	ID3D12Resource* vertexResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	ID3D12Resource* materialResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResource;
 	Material* materialData;
-	ID3D12Resource* transformationMatrixResource;
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResource;
 	TransformationMatrix* transformationMatrixData;
 	Transform transform;
 	ModelData modelData;

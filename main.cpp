@@ -26,6 +26,7 @@
 #include "Texture.h"
 #include "Model.h"
 #include "SphereModel.h"
+#include "ImGuiManager.h"
 
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
@@ -107,6 +108,10 @@ int WINAPI WinMain(
 	SphereModel* sphere = new SphereModel;
 	//球体の読み込み
 	sphere->Create(dxCommon);
+
+	//Imgui
+	ImGuiManager* imgui = new ImGuiManager;
+	imgui->Initialize(winApiManager);
 	
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;  // 0から始まる
@@ -262,17 +267,6 @@ int WINAPI WinMain(
 	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	//vertexData[5].texcoord = { 1.0f, 1.0f };
 
-	//インデックス
-	///ID3D12Resource* indexResourceSprite = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(uint32_t) * 6);
-	///D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
-	///indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	///indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
-	///indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
-	///uint32_t* indexDataSprite = nullptr;
-	///indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
-	///indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
-	///indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
-
 	//Instancing用にTransformationMatrixを10コ格納できるResourceを作る
 	const uint32_t kNumMaxInstance = 10; //インスタンス数
 	//Instancing用のTransformationMatrixリソースを作る
@@ -362,25 +356,18 @@ int WINAPI WinMain(
 			////SRVのDescriptorTableの先頭を設定。2はrootParameter[2]である。
 			//texture->Bind(dxCommon->GetCommandList());
 
-			////インデックス
-			/////dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-			//
 			////DirectionalLightの場所を設定
 			//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			//ImGui::Begin("Window");
-			//ImGui::ColorEdit4("Alpha", &color.x);
-			//materialData->color = color;
-			//ImGui::End();
+			ImGui::Begin("Window");
+			
+			ImGui::End();
 			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
 			//ImGuiの内部コマンドを生成する
 			ImGui::Render();
 
 			sprite->Draw(dxCommon->GetCommandList());
-			//sphere->Draw(dxCommon->GetCommandList());
+			sphere->Draw(dxCommon->GetCommandList());
 			model->Draw(dxCommon->GetCommandList());
-
-			//インデックス
-			///dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 			//実際のcommandListのImGuiの描画コマンドを積む
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
@@ -393,17 +380,6 @@ int WINAPI WinMain(
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 	//解放処理
-	///materialResource->Release();
-	///graphicsPipelineState->Release();
-	///signatureBlob->Release();
-	///if (errorBlob) {
-	///	errorBlob->Release();
-	///}
-	///rootSignature->Release();
-	///pixelShaderBlob->Release();
-	///vertexShaderBlob->Release();
-	
-	//入力解放
 	delete input;
 	delete winApiManager;
 	delete dxCommon;
@@ -412,6 +388,7 @@ int WINAPI WinMain(
 	delete model;
 	delete texture;
 	delete sphere;
+	delete imgui;
 
 	//リソースチェック
 	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;
@@ -419,10 +396,6 @@ int WINAPI WinMain(
 		debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 		debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-		///debug->Release();
 	}
-
-	
-
 	return 0;
 }

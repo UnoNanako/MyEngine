@@ -111,7 +111,7 @@ int WINAPI WinMain(
 
 	//Imgui
 	ImGuiManager* imgui = new ImGuiManager;
-	imgui->Initialize(winApiManager);
+	imgui->Initialize(winApiManager,dxCommon);
 	
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;  // 0から始まる
@@ -377,6 +377,8 @@ int WINAPI WinMain(
 	}
 	//WindowsAPIの終了処理
 	winApiManager->Finalize();
+	//ImGuiの終了処理
+	imgui->Finalize();
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
 	//解放処理

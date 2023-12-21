@@ -17,7 +17,7 @@ public:
 	void PostDraw();// 描画後
 
 	//シェーダーコンパイル関数
-	IDxcBlob* CompileShader(//CompilerするShaderファイルへのパス
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(//CompilerするShaderファイルへのパス
 		const std::wstring& filePath,
 		//Compilerに使用するProfile
 		const wchar_t* profile,
@@ -26,7 +26,7 @@ public:
 		IDxcCompiler3* dxcCompiler,
 		IDxcIncludeHandler* IDxcIncludeHandler);
 	//リソースを作る関数
-	ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes);
 	//デスクリプタヒープの添え字をずらす関数
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(uint32_t index);
 	D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(uint32_t index);
@@ -39,6 +39,8 @@ public:
 	ID3D12DescriptorHeap* GetSrvDescriptorHeap() { return srvDescriptorHeap.Get(); }
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap() { return dsvDescriptorHeap.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList() { return commandList.Get(); }
+	//バックバッファの数を取得
+	size_t GetBackBufferCount() const { return swapChainResource.size(); }
 private:
 	//メンバ変数
 	//DXGIファクトリー
@@ -99,8 +101,6 @@ private:
 	void InitializeScissor();
 	//DXCコンパイラの生成
 	void CreateCompiler();
-	//ImGuiの初期化
-	void InitializeImGui();
 	//指定番号のCPUデスクリプタハンドルを取得する
 	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(const Microsoft::WRL::ComPtr<ID3D12DescriptorHeap>& descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	//指定番号のGPUデスクリプタハンドルを取得する

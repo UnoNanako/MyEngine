@@ -44,12 +44,20 @@ void ImGuiManager::Finalize()
 
 void ImGuiManager::Begin()
 {
+	//フレームの先頭でImGuiに、ここからフレームが始まる旨を告げる
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 }
 
 void ImGuiManager::End()
 {
+	//描画前準備
+	ImGui::Render();
 }
 
-void ImGuiManager::Draw()
+void ImGuiManager::Draw(DirectXCommon* dxCommon)
 {
+	ID3D12GraphicsCommandList* commandList = dxCommon->GetCommandList();
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 }

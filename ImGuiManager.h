@@ -13,6 +13,6 @@ public:
 	void Finalize();
 	void Begin();
 	void End();
-	void Draw();
+	void Draw(DirectXCommon* dxCommon);
 };
 

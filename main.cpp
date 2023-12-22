@@ -312,10 +312,8 @@ int WINAPI WinMain(
 		}
 		else {
 			//ゲームの処理
-			//フレームの先頭でImGuiに、ここからフレームが始まる旨を告げる
-			ImGui_ImplDX12_NewFrame();
-			ImGui_ImplWin32_NewFrame();
-			ImGui::NewFrame();
+			
+			imgui->Begin();
 			//ゲームの更新処理でパラメータを変更したいタイミングでImGuiの処理を行う
 			//今回はImGuiのデモ用のUIを表示している
 			//開発用UIの処理。実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
@@ -362,15 +360,14 @@ int WINAPI WinMain(
 			
 			ImGui::End();
 			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
-			//ImGuiの内部コマンドを生成する
-			ImGui::Render();
+			imgui->End();
 
 			sprite->Draw(dxCommon->GetCommandList());
 			sphere->Draw(dxCommon->GetCommandList());
 			model->Draw(dxCommon->GetCommandList());
 
 			//実際のcommandListのImGuiの描画コマンドを積む
-			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxCommon->GetCommandList());
+			imgui->Draw(dxCommon);
 
 			dxCommon->PostDraw();
 		}

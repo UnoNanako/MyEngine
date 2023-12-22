@@ -27,33 +27,13 @@
 #include "Model.h"
 #include "SphereModel.h"
 #include "ImGuiManager.h"
-
+#include "Particle.h"
+#include "DirectionalLight.h"
+#include "Game.h"
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
 
 using namespace std;
-
-//Particle構造体
-struct Particle {
-	Transform transform;
-	Vector3 velocity;
-	Vector4 color;
-	float lifeTime;
-	float currentTime;
-};
-
-struct ParticleForGPU {
-	Matrix4x4 WVP;
-	Matrix4x4 World;
-	Vector4 color;
-};
-
-//平行光源(Directional Light)
-struct DirectionalLight {
-	Vector4 color; //ライトの色
-	Vector3 direction; //ライトの向き
-	float intensity; //輝度
-};
 
 //Particle生成関数
 Particle MakeNewParticle(std::mt19937& randomEngine) {
@@ -79,40 +59,9 @@ int WINAPI WinMain(
 	_In_ LPSTR lpCmdLine,
 	_In_ int nShowCmd)
 {
-	//ポインタ
-	WinApiManager* winApiManager = nullptr;
-	//WindowsAPIの初期化
-	winApiManager = new WinApiManager();
-	winApiManager->Initialize();
+	Game* game = new Game;
+	game->Initialize();
 
-	//入力の初期化
-	Input* input = nullptr;
-	input = new Input();
-	input->Initialize(winApiManager);
-	DirectXCommon* dxCommon = new DirectXCommon();
-	dxCommon->Initialize(winApiManager);
-
-	//スプライト共通部分の初期化
-	SpriteCommon* spriteCommon = new SpriteCommon;
-	spriteCommon->Initialize();
-	//スプライトの初期化
-	Sprite* sprite = new Sprite();
-	sprite->Create(dxCommon, "resources/UVChecker3.png");
-
-	//モデルの初期化
-	Model* model = new Model;
-	// モデル読み込み
-	model->Create(dxCommon, "resources/usagi.obj");
-	
-	//球体の初期化
-	SphereModel* sphere = new SphereModel;
-	//球体の読み込み
-	sphere->Create(dxCommon);
-
-	//Imgui
-	ImGuiManager* imgui = new ImGuiManager;
-	imgui->Initialize(winApiManager,dxCommon);
-	
 	D3D12_DESCRIPTOR_RANGE descriptorRange[1] = {};
 	descriptorRange[0].BaseShaderRegister = 0;  // 0から始まる
 	descriptorRange[0].NumDescriptors = 1;  // 数は1つ
@@ -165,7 +114,7 @@ int WINAPI WinMain(
 	}
 	//バイナリを元に生成
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
-	hr = dxCommon->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
+	hr = game->GetDxCommon()->GetDevice()->CreateRootSignature(0, signatureBlob->GetBufferPointer(),
 		signatureBlob->GetBufferSize(), IID_PPV_ARGS(&rootSignature));
 	assert(SUCCEEDED(hr));
 
@@ -208,10 +157,10 @@ int WINAPI WinMain(
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 
 	// Shaderをコンパイルする
-	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
+	Microsoft::WRL::ComPtr<IDxcBlob> vertexShaderBlob = game->GetDxCommon()->CompileShader(L"resources/shaders/Object3d.VS.hlsl", L"vs_6_0", game->GetDxCommon()->GetUtils(), game->GetDxCommon()->GetCompiler(), game->GetDxCommon()->GetHandler());
 	assert(vertexShaderBlob != nullptr);
 
-	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = dxCommon->CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", dxCommon->GetUtils(), dxCommon->GetCompiler(), dxCommon->GetHandler());
+	Microsoft::WRL::ComPtr<IDxcBlob> pixelShaderBlob = game->GetDxCommon()->CompileShader(L"resources/shaders/Object3d.PS.hlsl", L"ps_6_0", game->GetDxCommon()->GetUtils(), game->GetDxCommon()->GetCompiler(), game->GetDxCommon()->GetHandler());
 	assert(pixelShaderBlob != nullptr);
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
@@ -244,7 +193,7 @@ int WINAPI WinMain(
 
 	// 実際に生成
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-	hr = dxCommon->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
+	hr = game->GetDxCommon()->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
 
 	//// 左下
@@ -271,7 +220,7 @@ int WINAPI WinMain(
 	const uint32_t kNumMaxInstance = 10; //インスタンス数
 	//Instancing用のTransformationMatrixリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> instancingResource =
-		dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
+		game->GetDxCommon()->CreateBufferResource(game->GetDxCommon()->GetDevice(), sizeof(ParticleForGPU) * kNumMaxInstance);
 	//書き込むためのアドレスを取得
 	ParticleForGPU* instancingData = nullptr;
 	instancingResource->Map(0, nullptr, reinterpret_cast<void**>(&instancingData));
@@ -286,7 +235,7 @@ int WINAPI WinMain(
 	const float kDeltaTime = 1.0f / 60.0f;
 
 	//DirectionalLight用のResource
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(DirectionalLight));
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightResource = game->GetDxCommon()->CreateBufferResource(game->GetDxCommon()->GetDevice(), sizeof(DirectionalLight));
 	//データを書き込む
 	DirectionalLight* directionalLightData = nullptr;
 	//書き込むためのアドレスを取得
@@ -295,12 +244,7 @@ int WINAPI WinMain(
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
-
-	Texture *texture = new Texture();
-	texture->Create(dxCommon, "resources/UVChecker3.png");
 	
-	Transform spriteTransform = { {0.5f,0.5f,0.5f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	sprite->SetTransform(spriteTransform);
 
 	MSG msg{};
 	//--------------------10. GPUの実行を待つ(fenceは実行を待つものではなく、GPUの処理が終わったかを調べるもの)	//ウィンドウの×ボタンが押されるまでループ
@@ -311,41 +255,20 @@ int WINAPI WinMain(
 			DispatchMessage(&msg);
 		}
 		else {
-			//ゲームの処理
-			
-			imgui->Begin();
-			//ゲームの更新処理でパラメータを変更したいタイミングでImGuiの処理を行う
-			//今回はImGuiのデモ用のUIを表示している
-			//開発用UIの処理。実際に開発用のUIを出す場合はここをゲーム固有の処理に置き換える
-			ImGui::ShowDemoWindow();
-
 			///--------------------更新処理ここから--------------------
 
-			//入力の更新
-			input->Update();
-
-				//キーが押されているときの処理例
-			//数字の0キーが押されていたら
-			if (input->PushKey(DIK_0)) {
-				OutputDebugStringA("Hit 0\n");
-			}
-
-			sprite->Update();
-			model->Update();
-			sphere->Update();
+			game->Update();
 
 			///--------------------更新処理ここまで--------------------
-
-			dxCommon->PreDraw();
 
 			//--------------------5. 描画コマンド--------------------
 			//ImGuiを描画する
 			//描画用のDescriptorHeapの設定
-			ID3D12DescriptorHeap* descriptorHeaps[] = { dxCommon->GetSrvDescriptorHeap() };
-			dxCommon->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
+			ID3D12DescriptorHeap* descriptorHeaps[] = { game->GetDxCommon()->GetSrvDescriptorHeap() };
+			game->GetDxCommon()->GetCommandList()->SetDescriptorHeaps(1, descriptorHeaps);
 			// RootSignatureを設定。PSOに設定しているけど別途設定が必要
-			dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-			dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());   // PSOを設定
+			game->GetDxCommon()->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+			game->GetDxCommon()->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());   // PSOを設定
 			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);   // VBVを設定
 			// 形状を設定。PSOに設定しているものとはまた別。同じものを設定すると考えておけば良い
 			//dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -356,38 +279,14 @@ int WINAPI WinMain(
 
 			////DirectionalLightの場所を設定
 			//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
-			ImGui::Begin("Window");
 			
-			ImGui::End();
-			//ゲームの処理が終わり描画処理に入る前に、ImGuiの内部コマンドを生成する
-			imgui->End();
-
-			sprite->Draw(dxCommon->GetCommandList());
-			sphere->Draw(dxCommon->GetCommandList());
-			model->Draw(dxCommon->GetCommandList());
-
-			//実際のcommandListのImGuiの描画コマンドを積む
-			imgui->Draw(dxCommon);
-
-			dxCommon->PostDraw();
+			game->Draw();	
 		}
 	}
-	//WindowsAPIの終了処理
-	winApiManager->Finalize();
-	//ImGuiの終了処理
-	imgui->Finalize();
+	
+	game->Finalize();
 	//出力ウィンドウへの文字出力
 	OutputDebugStringA("Hello,DirectX!\n");
-	//解放処理
-	delete input;
-	delete winApiManager;
-	delete dxCommon;
-	delete spriteCommon;
-	delete sprite;
-	delete model;
-	delete texture;
-	delete sphere;
-	delete imgui;
 
 	//リソースチェック
 	Microsoft::WRL::ComPtr<IDXGIDebug1> debug;

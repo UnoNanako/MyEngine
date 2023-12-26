@@ -10,6 +10,7 @@
 #include "ImGuiManager.h"
 #include "Transform.h"
 #include "VertexData.h"
+#include "GamePlayScene.h"
 
 void Game::Initialize()
 {
@@ -29,26 +30,15 @@ void Game::Initialize()
 	//スプライト共通部分の初期化
 	spriteCommon = new SpriteCommon;
 	spriteCommon->Initialize();
-	//スプライトの初期化
-	sprite = new Sprite();
-	sprite->Create(dxCommon, "resources/UVChecker3.png");
-
-	//モデルの初期化
-	model = new Model;
-	// モデル読み込み
-	model->Create(dxCommon, "resources/usagi.obj");
-
-	//球体の初期化
-	sphere = new SphereModel;
-	//球体の読み込み
-	sphere->Create(dxCommon);
-
-	texture = new Texture();
-	texture->Create(dxCommon, "resources/UVChecker3.png");
 
 	//Imgui
 	imgui = new ImGuiManager;
 	imgui->Initialize(winApiManager, dxCommon);
+
+	//ゲームプレイシーンの生成
+	scene_ = new GamePlayScene();
+	//ゲームプレイシーンの初期化
+	scene_->Initialize(dxCommon);
 }
 
 void Game::Finalize()
@@ -58,22 +48,19 @@ void Game::Finalize()
 	winApiManager->Finalize();
 	//ImGuiの終了処理
 	imgui->Finalize();
+	//ゲームプレイシーンの終了処理
+	scene_->Finalize();
+	//シーンの解放
+	delete scene_;
 	delete input;
 	delete winApiManager;
 	delete dxCommon;
 	delete spriteCommon;
-	delete sprite;
-	delete model;
-	delete texture;
-	delete sphere;
 	delete imgui;
 }
 
 void Game::Update()
 {
-	Transform spriteTransform = { {0.5f,0.5f,0.5f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	sprite->SetTransform(spriteTransform);
-
 	imgui->Begin();
 	//入力の更新
 	input->Update();
@@ -82,20 +69,17 @@ void Game::Update()
 	if (input->PushKey(DIK_0)) {
 		OutputDebugStringA("Hit 0\n");
 	}
-
-	sprite->Update();
-	model->Update();
-	sphere->Update();
+	//シーンの更新処理
+	scene_->Update();
 }
 
 void Game::Draw()
 {
-	dxCommon->PreDraw();
+	dxCommon->PreDraw(); //描画前コマンド
 	imgui->End();
-	sprite->Draw(dxCommon->GetCommandList());
-	sphere->Draw(dxCommon->GetCommandList());
-	model->Draw(dxCommon->GetCommandList());
+	//シーン描画
+	scene_->Draw(dxCommon);
 	//実際のcommandListのImGuiの描画コマンドを積む
 	imgui->Draw(dxCommon);
-	dxCommon->PostDraw();
+	dxCommon->PostDraw(); //描画後コマンド
 }

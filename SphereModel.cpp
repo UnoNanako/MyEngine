@@ -1,9 +1,9 @@
-#include "SphereModel.h"
-#include "MT3.h"
 #include "DirectXCommon.h"
+#include "Material.h"
+#include "MT3.h"
+#include "SphereModel.h"
 #include "Transform.h"
 #include "VertexData.h"
-#include "Material.h"
 
 void SphereModel::Create(DirectXCommon* dxCommon)
 {

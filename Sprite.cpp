@@ -1,10 +1,10 @@
-#include "Sprite.h"
-#include <Windows.h>
 #include "DirectXCommon.h"
 #include "Material.h"
+#include "Sprite.h"
+#include "Texture.h"
 #include "Transform.h"
 #include "VertexData.h"
-#include "Texture.h"
+#include <Windows.h>
 
 void Sprite::Create(DirectXCommon* dxCommon, const std::string& filePath)
 {

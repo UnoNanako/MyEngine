@@ -1,6 +1,6 @@
-#include "Texture.h"
-#include "StringUtility.h"
 #include "DirectXCommon.h"
+#include "StringUtility.h"
+#include "Texture.h"
 uint32_t Texture::index = 1;
 
 void Texture::Create(DirectXCommon* dxCommon,const std::string& filePath)

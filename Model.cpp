@@ -1,15 +1,15 @@
-#include "Model.h"
-#include <cassert>
-#include <fstream>
-#include <sstream>
-#include <numbers>
-#include <Windows.h>
+#include "DirectXCommon.h"
 #include "Material.h"
+#include "Model.h"
+#include "Texture.h"
 #include "Transform.h"
 #include "VertexData.h"
-#include "Texture.h"
-#include "DirectXCommon.h"
 #include "WinApiManager.h"
+#include <cassert>
+#include <fstream>
+#include <numbers>
+#include <sstream>
+#include <Windows.h>
 
 void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 {

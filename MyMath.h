@@ -20,6 +20,17 @@ struct Matrix4x4 {
 	float m[4][4];
 };
 
+//球
+struct Sphere {
+	Vector3 center; //中心点
+	float radius; //半径
+};
+//平面
+struct Plane {
+	Vector3 normal; //法線
+	float distance; //距離
+};
+
 inline Vector2 Add(const Vector2& v1, const Vector2& v2) { return { v1.x + v2.x, v1.y + v2.y }; }
 inline Vector2 Subtract(const Vector2& v1, const Vector2& v2) { return { v1.x - v2.x, v1.y - v2.y }; }
 
@@ -448,4 +459,28 @@ inline Matrix4x4 MakeViewportMatrix(float left, float top, float width, float he
 		0.0f, 0.0f, maxDepth - minDepth, 0.0f,
 		left + width / 2.0f, top + height / 2.0f, minDepth, 1.0f,
 	};
+}
+
+//球と球の衝突判定
+bool IsCollision(const Sphere& s1, const Sphere& s2) {
+	Vector3 distanceVector = Subtract(s1.center, s2.center);
+	float distanceSq = Dot(distanceVector, distanceVector);
+	float sumRadius = s1.radius + s2.radius;
+	if (distanceSq <= (sumRadius * sumRadius)) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
+//球と平面の衝突判定
+bool IsCollision(const Sphere& sphere, const Plane& plane) {
+	float distance = std::abs(Dot(sphere.center, plane.normal) - plane.distance);
+	if (distance <= sphere.radius) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }

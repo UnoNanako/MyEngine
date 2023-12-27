@@ -1,5 +1,5 @@
 #pragma once
-#include "MT3.h"
+#include "MyMath.h"
 #include <string>
 
 using namespace std;

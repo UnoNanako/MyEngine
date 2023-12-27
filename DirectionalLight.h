@@ -1,5 +1,5 @@
 #pragma once
-#include "MT3.h"
+#include "MyMath.h"
 
 //平行光源(Directional Light)
 struct DirectionalLight {

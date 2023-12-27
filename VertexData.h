@@ -1,5 +1,5 @@
 #pragma once
-#include "MT3.h"
+#include "MyMath.h"
 //頂点データの拡張
 struct VertexData {
 	Vector4 position;

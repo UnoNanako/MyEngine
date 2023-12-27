@@ -1,6 +1,6 @@
 #include "DirectXCommon.h"
 #include "Material.h"
-#include "MT3.h"
+#include "MyMath.h"
 #include "SphereModel.h"
 #include "Transform.h"
 #include "VertexData.h"

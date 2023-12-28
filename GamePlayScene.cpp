@@ -6,6 +6,7 @@
 #include "Texture.h"
 #include "Transform.h"
 #include "VertexData.h"
+#include "Camera.h"
 
 void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 {
@@ -25,6 +26,13 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 
 	texture = new Texture();
 	texture->Create(dxCommon, "resources/UVChecker3.png");
+
+	floorModel = new Model;
+	floorModel->Create(dxCommon, "resources/floor.obj");
+
+	//カメラの初期化
+	camera = new Camera;
+	camera->Initialize();
 }
 
 void GamePlayScene::Finalize()
@@ -33,6 +41,8 @@ void GamePlayScene::Finalize()
 	delete model;
 	delete texture;
 	delete sphere;
+	delete floorModel;
+	delete camera;
 }
 
 void GamePlayScene::Update()
@@ -42,11 +52,16 @@ void GamePlayScene::Update()
 	sprite->Update();
 	model->Update();
 	sphere->Update();
+	floorModel->Update();
+	floorModel->SetScale({2.0f, 2.0f, 2.0f});
+	camera->Update();
 }
 
 void GamePlayScene::Draw(DirectXCommon* dxCommon)
 {
-	sprite->Draw(dxCommon->GetCommandList());
-	sphere->Draw(dxCommon->GetCommandList());
-	model->Draw(dxCommon->GetCommandList());
+	//sprite->Draw(dxCommon->GetCommandList());
+	//sphere->Draw(dxCommon->GetCommandList());
+	//model->Draw(dxCommon->GetCommandList());
+	texture->Bind(dxCommon->GetCommandList());
+	floorModel->Draw(dxCommon->GetCommandList(),camera);
 }

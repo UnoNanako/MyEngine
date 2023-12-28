@@ -5,6 +5,7 @@ class Sprite;
 class Model;
 class SphereModel;
 class Texture;
+class Camera;
 
 class GamePlayScene
 {
@@ -17,7 +18,9 @@ public:
 private:
 	Sprite* sprite;
 	Model* model;
+	Model* floorModel;
 	SphereModel* sphere;
 	Texture* texture;
+	Camera* camera;
 };
 

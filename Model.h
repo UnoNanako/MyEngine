@@ -14,6 +14,7 @@ class Texture;
 struct Material;
 struct TransformationMatrix;
 struct VertexData;
+class Camera;
 
 //モデルデータ
 struct ModelData {
@@ -26,11 +27,12 @@ class Model
 public:
 	void Create(DirectXCommon* dxCommon,const std::string& filePath);
 	void Update();
-	void Draw(ID3D12GraphicsCommandList* commandList);
+	void Draw(ID3D12GraphicsCommandList* commandList, Camera* camera);
 	//マテリアルデータを読む関数
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	//OBJファイルを読む関数
 	void LoadObjFile(const std::string& filePath);
+	void SetScale(Vector3 scale) { transform.scale = scale; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};

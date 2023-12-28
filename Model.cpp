@@ -10,6 +10,7 @@
 #include <numbers>
 #include <sstream>
 #include <Windows.h>
+#include "Camera.h"
 
 void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 {
@@ -49,19 +50,16 @@ void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 
 void Model::Update()
 {
+}
+
+void Model::Draw(ID3D12GraphicsCommandList* commandList,Camera* camera)
+{
 	const float kPi = std::numbers::pi_v<float>;
 	//Model用のWorldViewProjectionMatrixをつくる
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix({1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f});
-	Matrix4x4 cameraViewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(110.0f * (kPi / 180.0f),WinApiManager::kClientWidth / float(WinApiManager::kClientHeight),0.1f,1000.0f);
-	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(cameraViewMatrix, projectionMatrix));
+	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix()));
 	transformationMatrixData->WVP = worldViewProjectionMatrix;
 	transformationMatrixData->World = worldMatrix;
-}
-
-void Model::Draw(ID3D12GraphicsCommandList* commandList)
-{
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
@@ -136,6 +134,7 @@ void Model::LoadObjFile(const std::string& filePath)
 		//三角形を作る
 		else if (identifire == "f") {
 			//面は三角形限定。その他は未対応
+			VertexData triangle[3];
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				string vertexDefinition;
 				s >> vertexDefinition;
@@ -153,9 +152,13 @@ void Model::LoadObjFile(const std::string& filePath)
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
 				normal.x *= -1;
-				VertexData vertex = { position, texcoord };
-				modelData.vertices.push_back(vertex);
+				triangle[faceVertex] = {position, texcoord};
+				//modelData.vertices.push_back(vertex);
 			}
+			// 頂点を逆順で登録することで、回り順を逆にする
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
 		}
 		//material読み込み
 		else if (identifire == "mtllib") {

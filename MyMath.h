@@ -462,7 +462,7 @@ inline Matrix4x4 MakeViewportMatrix(float left, float top, float width, float he
 }
 
 //球と球の衝突判定
-bool IsCollision(const Sphere& s1, const Sphere& s2) {
+inline bool IsCollision(const Sphere& s1, const Sphere& s2) {
 	Vector3 distanceVector = Subtract(s1.center, s2.center);
 	float distanceSq = Dot(distanceVector, distanceVector);
 	float sumRadius = s1.radius + s2.radius;
@@ -475,7 +475,7 @@ bool IsCollision(const Sphere& s1, const Sphere& s2) {
 }
 
 //球と平面の衝突判定
-bool IsCollision(const Sphere& sphere, const Plane& plane) {
+inline bool IsCollision(const Sphere& sphere, const Plane& plane) {
 	float distance = std::abs(Dot(sphere.center, plane.normal) - plane.distance);
 	if (distance <= sphere.radius) {
 		return true;

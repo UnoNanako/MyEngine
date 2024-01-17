@@ -23,6 +23,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	sphere = new SphereModel;
 	//球体の読み込み
 	sphere->Create(dxCommon);
+	sphere->SetTranslate({ 0.0f,0.0f,10.0f });
 
 	texture = new Texture();
 	texture->Create(dxCommon, "resources/UVChecker3.png");
@@ -60,8 +61,8 @@ void GamePlayScene::Update()
 void GamePlayScene::Draw(DirectXCommon* dxCommon)
 {
 	//sprite->Draw(dxCommon->GetCommandList());
-	//sphere->Draw(dxCommon->GetCommandList());
-	//model->Draw(dxCommon->GetCommandList());
 	texture->Bind(dxCommon->GetCommandList());
-	floorModel->Draw(dxCommon->GetCommandList(),camera);
+	sphere->Draw(dxCommon->GetCommandList());
+	//model->Draw(dxCommon->GetCommandList());
+	//floorModel->Draw(dxCommon->GetCommandList(),camera);
 }

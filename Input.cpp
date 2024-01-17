@@ -3,6 +3,7 @@
 #include <cassert>
 #pragma comment(lib,"dinput8.lib")
 #pragma comment(lib,"dxguid.lib")
+#pragma comment(lib, "xinput.lib")
 
 void Input::Initialize(WinApiManager* winApiManager)
 {
@@ -21,7 +22,6 @@ void Input::Initialize(WinApiManager* winApiManager)
 	hr = keyboard->SetDataFormat(&c_dfDIKeyboard); //標準形式
 	assert(SUCCEEDED(hr));
 	//排他制御レベルのセット
-
 	hr = keyboard->SetCooperativeLevel(
 		winApiManager->GetHwnd(), DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
 	assert(SUCCEEDED(hr));
@@ -29,9 +29,14 @@ void Input::Initialize(WinApiManager* winApiManager)
 
 void Input::Update()
 {
+	memcpy(preKeys, keys, sizeof(keys));
 	//キーボード情報の取得開始
 	keyboard->Acquire();
 	keyboard->GetDeviceState(sizeof(keys), keys);
+
+	//ゲームパッド
+	mPrev = mCurr;
+	XInputGetState(0, &mCurr);
 }
 
 bool Input::PushKey(BYTE keyNumber) {
@@ -51,4 +56,43 @@ bool Input::TriggerKey(BYTE keyNumber) {
 	}
 	//トリガーではない
 	return false;
+}
+
+bool Input::GetButton(int button)
+{
+	return mCurr.Gamepad.wButtons & button;
+}
+
+bool Input::GetButtonUp(int button)
+{
+	return !(mCurr.Gamepad.wButtons & button) && mPrev.Gamepad.wButtons & button;
+}
+
+bool Input::GetButtonDown(int button)
+{
+	return mCurr.Gamepad.wButtons & button && !(mPrev.Gamepad.wButtons & button);
+}
+
+Vector2 Input::GetLStick()
+{
+	return Vector2(
+		mCurr.Gamepad.sThumbLX / 32768.0f,
+		mCurr.Gamepad.sThumbLY / 32768.0f);
+}
+
+Vector2 Input::GetRStick()
+{
+	return Vector2(
+		mCurr.Gamepad.sThumbRX / 32768.0f,
+		mCurr.Gamepad.sThumbRY / 32768.0f);
+}
+
+float Input::GetLTrigger()
+{
+	return mCurr.Gamepad.bLeftTrigger / 255.0f;
+}
+
+float Input::GetRTrigger()
+{
+	return mCurr.Gamepad.bRightTrigger / 255.0f;
 }

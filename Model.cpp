@@ -34,7 +34,7 @@ void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	materialData->color = { 1.0f,1.0f,1.0f,1.0f };
 	//SpriteはLightingしないのでfalseを設定する
-	materialData->enableLighting = false;
+	materialData->enableLighting = true;
 
 	//Transform
 	//Sprite用のTransformMatrix用のリソースを作る。Matrix4x4。1つ分のサイズを用意する

@@ -1,6 +1,13 @@
 #include "Object3d.hlsli"
 
 ConstantBuffer<Material> gMaterial : register(b0);
+
+struct DirectionalLight
+{
+    float32_t4 color;
+    float32_t3 direction;
+    float intensity;
+};
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
 
@@ -16,6 +23,6 @@ PixelShaderOutput main(VertexShaderOutput input) {
     }else{ //Lightingしない場合。前回までと同じ演算
         output.color = gMaterial.color * textureColor;
     }
-    output.color = gMaterial.color * textureColor;
+    output.color.a = 1.0f;
     return output;
 }

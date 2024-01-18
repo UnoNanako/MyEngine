@@ -7,6 +7,7 @@
 #include "Transform.h"
 #include "VertexData.h"
 #include "Camera.h"
+#include "LightList.h"
 
 void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 {
@@ -34,6 +35,10 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	//カメラの初期化
 	camera = new Camera;
 	camera->Initialize();
+
+	//directionalLightの初期化
+	mDirectionalLight = new LightList;
+	mDirectionalLight->Create(dxCommon);
 }
 
 void GamePlayScene::Finalize()
@@ -44,6 +49,7 @@ void GamePlayScene::Finalize()
 	delete sphere;
 	delete floorModel;
 	delete camera;
+	delete mDirectionalLight;
 }
 
 void GamePlayScene::Update()
@@ -61,6 +67,7 @@ void GamePlayScene::Update()
 void GamePlayScene::Draw(DirectXCommon* dxCommon)
 {
 	//sprite->Draw(dxCommon->GetCommandList());
+	mDirectionalLight->Bind(dxCommon->GetCommandList());
 	texture->Bind(dxCommon->GetCommandList());
 	sphere->Draw(dxCommon->GetCommandList());
 	//model->Draw(dxCommon->GetCommandList());

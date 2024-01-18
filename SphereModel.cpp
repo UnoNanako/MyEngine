@@ -28,7 +28,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 	materialResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(Material));
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	materialData->color = { 1.0f,1.0f,1.0f,1.0f };
-	materialData->enableLighting = false;
+	materialData->enableLighting = true;
 
 	//球体用頂点
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {

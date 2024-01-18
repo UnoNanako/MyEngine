@@ -6,6 +6,7 @@ class Model;
 class SphereModel;
 class Texture;
 class Camera;
+class LightList;
 
 class GamePlayScene
 {
@@ -22,5 +23,6 @@ private:
 	SphereModel* sphere;
 	Texture* texture;
 	Camera* camera;
+	LightList* mDirectionalLight;
 };
 

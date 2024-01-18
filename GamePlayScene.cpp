@@ -34,8 +34,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 
 	//カメラの初期化
 	camera = new Camera;
-	camera->Initialize();
-
+	camera->Initialize(dxCommon);
 	//directionalLightの初期化
 	mDirectionalLight = new LightList;
 	mDirectionalLight->Create(dxCommon);
@@ -67,6 +66,7 @@ void GamePlayScene::Update()
 void GamePlayScene::Draw(DirectXCommon* dxCommon)
 {
 	//sprite->Draw(dxCommon->GetCommandList());
+	camera->Bind(dxCommon->GetCommandList());
 	mDirectionalLight->Bind(dxCommon->GetCommandList());
 	texture->Bind(dxCommon->GetCommandList());
 	sphere->Draw(dxCommon->GetCommandList());

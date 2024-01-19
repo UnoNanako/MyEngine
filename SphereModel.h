@@ -7,13 +7,14 @@
 class DirectXCommon;
 struct VertexData;
 struct Material;
+class Camera;
 
 class SphereModel
 {
 public:
 	void Create(DirectXCommon* dxCommon);
 	void Update();
-	void Draw(ID3D12GraphicsCommandList *commandList);
+	void Draw(ID3D12GraphicsCommandList *commandList, Camera* camera);
 
 	void SetTranslate(Vector3 translate) { transform.translate = translate; }
 

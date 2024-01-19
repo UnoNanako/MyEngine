@@ -6,6 +6,7 @@
 
 void LightList::Create(DirectXCommon* dxCommon)
 {
+	assert(dxCommon);
 	mDirectionalLightResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(DirectionalLightForGPU));
 	mDirectionalLightData = nullptr;
 	mDirectionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&mDirectionalLightData));

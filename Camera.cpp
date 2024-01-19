@@ -1,6 +1,7 @@
 #include "Camera.h"
 #include "WinApiManager.h"
 #include "DirectXCommon.h"
+#include "externals/imgui/imgui.h"
 
 void Camera::Initialize(DirectXCommon* dxCommon)
 {
@@ -11,10 +12,13 @@ void Camera::Initialize(DirectXCommon* dxCommon)
 
 void Camera::Update()
 {
+	ImGui::Begin("Camera");
+	ImGui::DragFloat3("position", &transform.translate.x, 0.05f);
+	ImGui::End();
 	const float kPi = std::numbers::pi_v<float>;
 	matrix = MakeAffineMatrix(transform.scale,transform.rotate,transform.translate);
 	viewMatrix = Inverse(matrix);
-	projectionMatrix = MakePerspectiveFovMatrix(110.0f * (kPi / 180.0f), WinApiManager::kClientWidth / float(WinApiManager::kClientHeight), 0.1f, 1000.0f);
+	projectionMatrix = MakePerspectiveFovMatrix(50.0f * (kPi / 180.0f), WinApiManager::kClientWidth / float(WinApiManager::kClientHeight), 0.1f, 1000.0f);
 	*cameraData = { transform.translate };
 }
 

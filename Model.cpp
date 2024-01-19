@@ -11,6 +11,7 @@
 #include <sstream>
 #include <Windows.h>
 #include "Camera.h"
+#include "ImGuiManager.h"
 
 void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 {
@@ -35,6 +36,7 @@ void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 	materialData->color = { 1.0f,1.0f,1.0f,1.0f };
 	//SpriteはLightingしないのでfalseを設定する
 	materialData->enableLighting = true;
+	materialData->shininess = 100.0f;
 
 	//Transform
 	//Sprite用のTransformMatrix用のリソースを作る。Matrix4x4。1つ分のサイズを用意する
@@ -50,6 +52,7 @@ void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 
 void Model::Update()
 {
+	
 }
 
 void Model::Draw(ID3D12GraphicsCommandList* commandList,Camera* camera)

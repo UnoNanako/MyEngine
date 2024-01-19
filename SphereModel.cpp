@@ -4,6 +4,8 @@
 #include "SphereModel.h"
 #include "Transform.h"
 #include "VertexData.h"
+#include "externals/imgui/imgui.h"
+#include "Camera.h"
 
 void SphereModel::Create(DirectXCommon* dxCommon)
 {
@@ -29,6 +31,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	materialData->color = { 1.0f,1.0f,1.0f,1.0f };
 	materialData->enableLighting = true;
+	materialData->shininess = 100.0f;
 
 	//球体用頂点
 	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
@@ -42,7 +45,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 			vertexData[start].position.z = cos(lat) * sin(lon);
 			vertexData[start].position.w = 1.0f;
 			vertexData[start].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
+			vertexData[start].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
 			vertexData[start].normal.x = vertexData[start].position.x;
 			vertexData[start].normal.y = vertexData[start].position.y;
 			vertexData[start].normal.z = vertexData[start].position.z;
@@ -52,7 +55,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 			vertexData[start + 1].position.z = cos(lat + kLatEvery) * sin(lon);
 			vertexData[start + 1].position.w = 1.0f;
 			vertexData[start + 1].texcoord.x = float(lonIndex) / float(kSubdivision);
-			vertexData[start + 1].texcoord.y = 1.0 - float(latIndex + 1) / float(kSubdivision);
+			vertexData[start + 1].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
 			vertexData[start + 1].normal.x = vertexData[start + 1].position.x;
 			vertexData[start + 1].normal.y = vertexData[start + 1].position.y;
 			vertexData[start + 1].normal.z = vertexData[start + 1].position.z;
@@ -62,7 +65,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 			vertexData[start + 2].position.z = cos(lat) * sin(lon + kLonEvery);
 			vertexData[start + 2].position.w = 1.0f;
 			vertexData[start + 2].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 2].texcoord.y = 1.0 - float(latIndex) / float(kSubdivision);
+			vertexData[start + 2].texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
 			vertexData[start + 2].normal.x = vertexData[start + 2].position.x;
 			vertexData[start + 2].normal.y = vertexData[start + 2].position.y;
 			vertexData[start + 2].normal.z = vertexData[start + 2].position.z;
@@ -82,7 +85,7 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 			vertexData[start + 5].position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
 			vertexData[start + 5].position.w = 1.0f;
 			vertexData[start + 5].texcoord.x = float(lonIndex + 1) / float(kSubdivision);
-			vertexData[start + 5].texcoord.y = 1.0 - float(latIndex + 1) / float(kSubdivision);
+			vertexData[start + 5].texcoord.y = 1.0f - float(latIndex + 1) / float(kSubdivision);
 			vertexData[start + 5].normal.x = vertexData[start + 5].position.x;
 			vertexData[start + 5].normal.y = vertexData[start + 5].position.y;
 			vertexData[start + 5].normal.z = vertexData[start + 5].position.z;
@@ -92,16 +95,19 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 
 void SphereModel::Update()
 {
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
-	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-	wvpData->WVP = worldViewProjectionMatrix;
+	ImGui::Begin("Sphere");
+	ImGui::DragFloat3("position", &transform.translate.x,0.05f);
+	ImGui::End();
+	
 }
 
-void SphereModel::Draw(ID3D12GraphicsCommandList* commandList)
+void SphereModel::Draw(ID3D12GraphicsCommandList* commandList, Camera* camera)
 {
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix()));
+	wvpData->WVP = worldViewProjectionMatrix;
+	wvpData->World = worldMatrix;
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());

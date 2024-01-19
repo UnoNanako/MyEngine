@@ -69,7 +69,7 @@ void GamePlayScene::Draw(DirectXCommon* dxCommon)
 	camera->Bind(dxCommon->GetCommandList());
 	mDirectionalLight->Bind(dxCommon->GetCommandList());
 	texture->Bind(dxCommon->GetCommandList());
-	sphere->Draw(dxCommon->GetCommandList());
+	sphere->Draw(dxCommon->GetCommandList(),camera);
 	//model->Draw(dxCommon->GetCommandList());
 	//floorModel->Draw(dxCommon->GetCommandList(),camera);
 }

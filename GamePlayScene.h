@@ -20,9 +20,12 @@ private:
 	Sprite* sprite;
 	Model* model;
 	Model* floorModel;
+	Model* terrainModel;
 	SphereModel* sphere;
 	Texture* texture;
+	Texture* terrainTexture;
 	Camera* camera;
 	LightList* mDirectionalLight;
+	LightList* mPointLight;
 };
 

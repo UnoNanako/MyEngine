@@ -42,4 +42,5 @@ private:
 	TransformationMatrix* transformationMatrixData;
 	Transform transform;
 	ModelData modelData;
+	Texture *texture;
 };

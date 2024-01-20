@@ -38,6 +38,10 @@ void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 	materialData->enableLighting = true;
 	materialData->shininess = 100.0f;
 
+	//Texture
+	texture = new Texture();
+	texture->Create(dxCommon, modelData.material.textureFilePath);
+
 	//Transform
 	//Sprite用のTransformMatrix用のリソースを作る。Matrix4x4。1つ分のサイズを用意する
 	transformationMatrixResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(TransformationMatrix));
@@ -57,7 +61,7 @@ void Model::Update()
 
 void Model::Draw(ID3D12GraphicsCommandList* commandList,Camera* camera)
 {
-	const float kPi = std::numbers::pi_v<float>;
+	//const float kPi = std::numbers::pi_v<float>;
 	//Model用のWorldViewProjectionMatrixをつくる
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix()));
@@ -67,6 +71,7 @@ void Model::Draw(ID3D12GraphicsCommandList* commandList,Camera* camera)
 	commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 	commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 	commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+	texture->Bind(commandList);
 	commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 }
 
@@ -74,6 +79,7 @@ MaterialData Model::LoadMaterialTemplateFile(const std::string& directoryPath, c
 {
 	//1. 中で必要となる変数の宣言
 	MaterialData materialData; //構築するMaterialData
+	materialData.textureFilePath = "resources/default.png";
 	std::string line; //ファイルから呼んだ1行を格納するもの
 
 	//2. ファイルを開く
@@ -155,7 +161,7 @@ void Model::LoadObjFile(const std::string& filePath)
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
 				normal.x *= -1;
-				triangle[faceVertex] = {position, texcoord};
+				triangle[faceVertex] = {position, texcoord, normal};
 				//modelData.vertices.push_back(vertex);
 			}
 			// 頂点を逆順で登録することで、回り順を逆にする

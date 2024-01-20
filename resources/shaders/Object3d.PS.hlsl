@@ -1,22 +1,33 @@
 #include "Object3d.hlsli"
 
-ConstantBuffer<Material> gMaterial : register(b0);
-
 struct DirectionalLight
 {
     float32_t4 color;
     float32_t3 direction;
     float intensity;
 };
-ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 
 struct Camera
 {
     float32_t3 position;
 };
+
+struct PointLight
+{
+    float32_t4 color; //ライトの色
+    float32_t3 position; //ライトの位置
+    float intensity; //輝度
+    float radius; //ライトの届く最大距離
+    float decay; //減衰率
+};
+
+ConstantBuffer<Material> gMaterial : register(b0);
+ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCameraPos : register(b2);
+ConstantBuffer<PointLight> gPointLight : register(b3);
 
 Texture2D<float32_t4> gTexture : register(t0);
+
 SamplerState gSampler : register(s0);
 
 PixelShaderOutput main(VertexShaderOutput input)
@@ -40,10 +51,23 @@ PixelShaderOutput main(VertexShaderOutput input)
         float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
         //鏡面反射
         float32_t3 specular = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
-        //拡散反射+鏡面反射
+        
+        //PointLight
+        float32_t3 pointLightDirection = normalize(input.worldPosition - gPointLight.position);
+        reflectLight = reflect(pointLightDirection, normalize(input.normal));
+        RdotE = dot(reflectLight, toEye);
+        specularPow = pow(saturate(RdotE), gMaterial.shininess);
+        NdotL = dot(normalize(input.normal), -pointLightDirection);
+        cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        float32_t distance = length(gPointLight.position - input.worldPosition);
+        float32_t factor = pow(saturate(-distance / gPointLight.radius + 1.0f), gPointLight.decay);
+        diffuse += gMaterial.color.rgb * textureColor.rgb * gPointLight.color.rgb * cos * gPointLight.intensity * factor;
+        specular += gPointLight.color.rgb * gPointLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f) * factor;
+        
+        //拡散反射+鏡面反射+PointLight
         output.color.rgb = diffuse + specular;
         output.color.a = gMaterial.color.a * textureColor.a;
-        
+       
         //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
     }
     else

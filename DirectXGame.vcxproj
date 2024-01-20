@@ -140,6 +140,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="Model.h" />
     <ClInclude Include="MyMath.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="PointLight.h" />
     <ClInclude Include="SphereModel.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteCommon.h" />

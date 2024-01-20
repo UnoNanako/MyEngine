@@ -95,15 +95,15 @@ void SphereModel::Create(DirectXCommon* dxCommon)
 
 void SphereModel::Update()
 {
-	ImGui::Begin("Sphere");
-	ImGui::DragFloat3("position", &transform.translate.x,0.05f);
+	ImGui::Begin("Debug");
+	ImGui::DragFloat3("Sphere Position", &transform.translate.x,0.05f);
 	ImGui::End();
 	
 }
 
 void SphereModel::Draw(ID3D12GraphicsCommandList* commandList, Camera* camera)
 {
-	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
+	//Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApiManager::kClientWidth) / float(WinApiManager::kClientHeight), 0.1f, 100.0f);
 	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 	Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, Multiply(camera->GetViewMatrix(), camera->GetProjectionMatrix()));
 	wvpData->WVP = worldViewProjectionMatrix;

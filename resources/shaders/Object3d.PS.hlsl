@@ -21,10 +21,22 @@ struct PointLight
     float decay; //減衰率
 };
 
+struct SpotLight
+{
+    float32_t4 color; //ライトの色
+    float32_t3 position; //ライトの位置
+    float32_t intensity; //輝度
+    float32_t3 direction; //スポットライトの方向
+    float32_t distance; //ライトの届く最大距離
+    float32_t decay; //減衰率
+    float32_t cosAngle; //スポットライトの余弦
+};
+
 ConstantBuffer<Material> gMaterial : register(b0);
 ConstantBuffer<DirectionalLight> gDirectionalLight : register(b1);
 ConstantBuffer<Camera> gCameraPos : register(b2);
 ConstantBuffer<PointLight> gPointLight : register(b3);
+ConstantBuffer<SpotLight> gSpotLight : register(b4);
 
 Texture2D<float32_t4> gTexture : register(t0);
 
@@ -64,7 +76,19 @@ PixelShaderOutput main(VertexShaderOutput input)
         diffuse += gMaterial.color.rgb * textureColor.rgb * gPointLight.color.rgb * cos * gPointLight.intensity * factor;
         specular += gPointLight.color.rgb * gPointLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f) * factor;
         
-        //拡散反射+鏡面反射+PointLight
+        //SpotLight
+        float32_t3 spotLightDirectionOnSurface = normalize(input.worldPosition - gSpotLight.position);
+        reflectLight = reflect(spotLightDirectionOnSurface, normalize(input.normal));
+        RdotE = dot(reflectLight, toEye);
+        specularPow = pow(saturate(RdotE), gMaterial.shininess);
+        NdotL = dot(normalize(input.normal), -spotLightDirectionOnSurface);
+        cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+        float32_t cosAngle = dot(spotLightDirectionOnSurface, gSpotLight.direction);
+        float32_t falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (1.0f, -gSpotLight.cosAngle));
+        diffuse += gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * cos * gSpotLight.intensity * falloffFactor;
+        specular += gSpotLight.color.rgb * gSpotLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f) * falloffFactor;
+        
+        //拡散反射+鏡面反射+PointLight+SpotLight
         output.color.rgb = diffuse + specular;
         output.color.a = gMaterial.color.a * textureColor.a;
        

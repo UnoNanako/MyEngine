@@ -49,6 +49,10 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	//pointLightの初期化
 	mPointLight = new LightList;
 	mPointLight->Create(dxCommon);
+
+	//spotLightの初期化
+	mSpotLight = new LightList;
+	mSpotLight->Create(dxCommon);
 }
 
 void GamePlayScene::Finalize()
@@ -63,6 +67,7 @@ void GamePlayScene::Finalize()
 	delete camera;
 	delete mDirectionalLight;
 	delete mPointLight;
+	delete mSpotLight;
 }
 
 void GamePlayScene::Update()
@@ -74,6 +79,7 @@ void GamePlayScene::Update()
 	floorModel->SetScale({2.0f, 2.0f, 2.0f});
 	camera->Update();
 	mPointLight->Update();
+	mSpotLight->Update();
 }
 
 void GamePlayScene::Draw(DirectXCommon* dxCommon)
@@ -82,6 +88,7 @@ void GamePlayScene::Draw(DirectXCommon* dxCommon)
 	camera->Bind(dxCommon->GetCommandList());
 	mDirectionalLight->Bind(dxCommon->GetCommandList());
 	mPointLight->Bind(dxCommon->GetCommandList());
+	mSpotLight->Bind(dxCommon->GetCommandList());
 	texture->Bind(dxCommon->GetCommandList());
 	//terrainTexture->Bind(dxCommon->GetCommandList());
 	sphere->Draw(dxCommon->GetCommandList(),camera);

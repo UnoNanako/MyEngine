@@ -27,5 +27,6 @@ private:
 	Camera* camera;
 	LightList* mDirectionalLight;
 	LightList* mPointLight;
+	LightList* mSpotLight;
 };
 

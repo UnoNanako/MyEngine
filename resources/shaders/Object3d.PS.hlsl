@@ -83,8 +83,8 @@ PixelShaderOutput main(VertexShaderOutput input)
         specularPow = pow(saturate(RdotE), gMaterial.shininess);
         NdotL = dot(normalize(input.normal), -spotLightDirectionOnSurface);
         cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
-        float32_t cosAngle = dot(spotLightDirectionOnSurface, gSpotLight.direction);
-        float32_t falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (1.0f, -gSpotLight.cosAngle));
+        float32_t cosAngle = dot(normalize(spotLightDirectionOnSurface), normalize(gSpotLight.direction));
+        float32_t falloffFactor = saturate((cosAngle - gSpotLight.cosAngle) / (1.0f-gSpotLight.cosAngle));
         diffuse += gMaterial.color.rgb * textureColor.rgb * gSpotLight.color.rgb * cos * gSpotLight.intensity * falloffFactor;
         specular += gSpotLight.color.rgb * gSpotLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f) * falloffFactor;
         

@@ -12,6 +12,9 @@
 #include <Windows.h>
 #include "Camera.h"
 #include "ImGuiManager.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
 {
@@ -178,4 +181,8 @@ void Model::LoadObjFile(const std::string& filePath)
 			modelData.material = LoadMaterialTemplateFile("resources", materialFilename);
 		}
 	}
+}
+
+void Model::Load(const std::string& derectoryPath, const std::string& filename)
+{
 }

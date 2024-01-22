@@ -32,6 +32,8 @@ public:
 	MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
 	//OBJファイルを読む関数
 	void LoadObjFile(const std::string& filePath);
+	//glTFを読む関数
+	void Load(const std::string& derectoryPath,const std::string& filename);
 	void SetScale(Vector3 scale) { transform.scale = scale; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;

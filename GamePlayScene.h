@@ -21,6 +21,7 @@ private:
 	Model* model;
 	Model* floorModel;
 	Model* terrainModel;
+	Model* panda;
 	SphereModel* sphere;
 	Texture* texture;
 	Texture* terrainTexture;

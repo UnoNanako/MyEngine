@@ -18,7 +18,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	//モデルの初期化
 	model = new Model;
 	// モデル読み込み
-	model->Create(dxCommon, "resources/usagi.obj");
+	model->Create(dxCommon, "resources","usagi.obj");
 
 	//球体の初期化
 	sphere = new SphereModel;
@@ -33,10 +33,10 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	terrainTexture->Create(dxCommon, "resources/grass.png");
 
 	floorModel = new Model;
-	floorModel->Create(dxCommon, "resources/floor.obj");
+	floorModel->Create(dxCommon, "resources","floor.obj");
 
 	terrainModel = new Model;
-	terrainModel->Create(dxCommon, "resources/terrain.obj");
+	terrainModel->Create(dxCommon, "resources","terrain.obj");
 
 	//カメラの初期化
 	camera = new Camera;
@@ -53,6 +53,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	//spotLightの初期化
 	mSpotLight = new LightList;
 	mSpotLight->Create(dxCommon);
+
 }
 
 void GamePlayScene::Finalize()

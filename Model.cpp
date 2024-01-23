@@ -16,9 +16,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-void Model::Create(DirectXCommon* dxCommon, const std::string& filePath)
+void Model::Create(DirectXCommon* dxCommon, const std::string& directoryPath,const std::string& filePath)
 {
-	LoadObjFile(filePath);
+	Load(directoryPath,filePath);
 	//頂点
 	vertexResource = dxCommon->CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * modelData.vertices.size());
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();

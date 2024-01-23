@@ -25,7 +25,7 @@ struct ModelData {
 class Model
 {
 public:
-	void Create(DirectXCommon* dxCommon,const std::string& filePath);
+	void Create(DirectXCommon* dxCommon, const std::string& directoryPath, const std::string& filePath);
 	void Update();
 	void Draw(ID3D12GraphicsCommandList* commandList, Camera* camera);
 	//マテリアルデータを読む関数

@@ -15,11 +15,6 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	sprite = new Sprite();
 	sprite->Create(dxCommon, "resources/UVChecker3.png");
 
-	//モデルの初期化
-	model = new Model;
-	// モデル読み込み
-	model->Create(dxCommon, "resources","usagi.obj");
-
 	//球体の初期化
 	sphere = new SphereModel;
 	//球体の読み込み
@@ -31,9 +26,6 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 
 	terrainTexture = new Texture();
 	terrainTexture->Create(dxCommon, "resources/grass.png");
-
-	floorModel = new Model;
-	floorModel->Create(dxCommon, "resources","floor.obj");
 
 	terrainModel = new Model;
 	terrainModel->Create(dxCommon, "resources","terrain.obj");
@@ -59,11 +51,9 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 void GamePlayScene::Finalize()
 {
 	delete sprite;
-	delete model;
 	delete texture;
 	delete terrainTexture;
 	delete sphere;
-	delete floorModel;
 	delete terrainModel;
 	delete camera;
 	delete mDirectionalLight;
@@ -77,7 +67,7 @@ void GamePlayScene::Update()
 	sprite->SetTransform(spriteTransform);
 	sprite->Update();
 	sphere->Update();
-	floorModel->SetScale({2.0f, 2.0f, 2.0f});
+	//floorModel->SetScale({2.0f, 2.0f, 2.0f});
 	camera->Update();
 	mPointLight->Update();
 	mSpotLight->Update();

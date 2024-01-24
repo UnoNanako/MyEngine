@@ -28,7 +28,7 @@ void GamePlayScene::Initialize(DirectXCommon* dxCommon)
 	terrainTexture->Create(dxCommon, "resources/grass.png");
 
 	terrainModel = new Model;
-	terrainModel->Create(dxCommon, "resources","terrain.obj");
+	//terrainModel->Create(dxCommon, "resources","terrain.obj");
 
 	//カメラの初期化
 	camera = new Camera;

@@ -35,6 +35,7 @@ public:
 	//glTFを読む関数
 	void Load(const std::string& derectoryPath,const std::string& filename);
 	void SetScale(Vector3 scale) { transform.scale = scale; }
+	void SetTexture(Texture* texture) { this->texture = texture; }
 private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource;
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};

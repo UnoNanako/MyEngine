@@ -212,6 +212,7 @@ void Model::Load(const std::string& directoryPath, const std::string& filename)
 				vertex.normal.x *= -1.0f;
 				modelData.vertices.push_back(vertex);
 				//materialを解析する
+				modelData.material.textureFilePath = "resources/default.png";
 				for (uint32_t materialIndex = 0; materialIndex < scene->mNumMaterials; ++materialIndex) {
 					aiMaterial* material = scene->mMaterials[materialIndex];
 					if (material->GetTextureCount(aiTextureType_DIFFUSE) != 0) {
